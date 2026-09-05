@@ -1,129 +1,187 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
+import { RadioStation } from '../types';
 
 interface TVNavigationOptions {
   onPlayPause: () => void;
   onNextStation: () => void;
   onPreviousStation: () => void;
-  onSelectStation1: () => void;
-  onSelectStation2: () => void;
+  onSelectStation: (station: RadioStation) => void;
   onToggleMute: () => void;
+  onOpenAddModal?: () => void;
+  stations: RadioStation[];
   isTVMode: boolean;
 }
-
-export type FocusableTarget = 
-  | 'station-1'
-  | 'station-2'
-  | 'play-pause'
-  | 'prev-station'
-  | 'next-station'
-  | 'mute'
-  | 'mode-selector';
 
 export function useTVNavigation({
   onPlayPause,
   onNextStation,
   onPreviousStation,
-  onSelectStation1,
-  onSelectStation2,
+  onSelectStation,
   onToggleMute,
+  onOpenAddModal,
+  stations,
   isTVMode,
 }: TVNavigationOptions) {
-  const [focusedElement, setFocusedElement] = useState<FocusableTarget>('play-pause');
+  // Can be 'play-pause' | 'prev-station' | 'next-station' | 'mute' | 'station-${id}' | 'add-station'
+  const [focusedElement, setFocusedElement] = useState<string>('play-pause');
+
+  const handleSelectFocused = useCallback(() => {
+    if (focusedElement === 'play-pause') {
+      onPlayPause();
+    } else if (focusedElement === 'prev-station') {
+      onPreviousStation();
+    } else if (focusedElement === 'next-station') {
+      onNextStation();
+    } else if (focusedElement === 'mute') {
+      onToggleMute();
+    } else if (focusedElement === 'add-station') {
+      onOpenAddModal?.();
+    } else if (focusedElement.startsWith('station-')) {
+      const stationId = focusedElement.replace('station-', '');
+      const matched = stations.find((s) => s.id === stationId);
+      if (matched) {
+        onSelectStation(matched);
+      }
+    }
+  }, [
+    focusedElement,
+    onPlayPause,
+    onPreviousStation,
+    onNextStation,
+    onToggleMute,
+    onOpenAddModal,
+    stations,
+    onSelectStation,
+  ]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Direct Media Keys from Android TV / Android Auto / Bluetooth remotes
-      if (e.key === 'MediaPlayPause' || e.code === 'MediaPlayPause') {
+      // 1. Native TV Remote Media Buttons (Play/Pause, Next, Prev)
+      const code = e.keyCode || e.which;
+      
+      // Standard Android TV key codes:
+      // KEYCODE_MEDIA_PLAY_PAUSE = 85
+      // KEYCODE_MEDIA_PLAY = 126
+      // KEYCODE_MEDIA_PAUSE = 127
+      // KEYCODE_MEDIA_NEXT = 87
+      // KEYCODE_MEDIA_PREVIOUS = 88
+      // KEYCODE_DPAD_UP = 19
+      // KEYCODE_DPAD_DOWN = 20
+      // KEYCODE_DPAD_LEFT = 21
+      // KEYCODE_DPAD_RIGHT = 22
+      // KEYCODE_DPAD_CENTER / ENTER = 23, 66
+      // KEYCODE_VOLUME_MUTE = 164
+
+      if (
+        e.key === 'MediaPlayPause' ||
+        e.code === 'MediaPlayPause' ||
+        code === 85
+      ) {
         e.preventDefault();
         onPlayPause();
         return;
       }
-      if (e.key === 'MediaPlay' || e.code === 'MediaPlay') {
+      if (e.key === 'MediaPlay' || e.code === 'MediaPlay' || code === 126) {
         e.preventDefault();
         onPlayPause();
         return;
       }
-      if (e.key === 'MediaPause' || e.code === 'MediaPause') {
+      if (e.key === 'MediaPause' || e.code === 'MediaPause' || code === 127) {
         e.preventDefault();
         onPlayPause();
         return;
       }
-      if (e.key === 'MediaTrackNext' || e.code === 'MediaTrackNext') {
+      if (e.key === 'MediaTrackNext' || e.code === 'MediaTrackNext' || code === 87) {
         e.preventDefault();
         onNextStation();
         return;
       }
-      if (e.key === 'MediaTrackPrevious' || e.code === 'MediaTrackPrevious') {
+      if (e.key === 'MediaTrackPrevious' || e.code === 'MediaTrackPrevious' || code === 88) {
         e.preventDefault();
         onPreviousStation();
         return;
       }
 
-      // If user presses spatial arrows
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', ' '].includes(e.key)) {
-        // Spatial map navigation
-        if (e.key === 'ArrowDown') {
-          e.preventDefault();
-          setFocusedElement((prev) => {
-            if (prev === 'mode-selector') return 'play-pause';
-            if (prev === 'prev-station' || prev === 'play-pause' || prev === 'next-station') return 'station-1';
-            if (prev === 'station-1') return 'station-2';
-            if (prev === 'station-2') return 'mute';
-            return prev;
-          });
-        } else if (e.key === 'ArrowUp') {
-          e.preventDefault();
-          setFocusedElement((prev) => {
-            if (prev === 'mute') return 'station-2';
-            if (prev === 'station-2') return 'station-1';
-            if (prev === 'station-1') return 'play-pause';
-            if (prev === 'play-pause' || prev === 'prev-station' || prev === 'next-station') return 'mode-selector';
-            return prev;
-          });
-        } else if (e.key === 'ArrowLeft') {
-          e.preventDefault();
-          setFocusedElement((prev) => {
-            if (prev === 'next-station') return 'play-pause';
-            if (prev === 'play-pause') return 'prev-station';
-            return prev;
-          });
-        } else if (e.key === 'ArrowRight') {
-          e.preventDefault();
-          setFocusedElement((prev) => {
-            if (prev === 'prev-station') return 'play-pause';
-            if (prev === 'play-pause') return 'next-station';
-            return prev;
-          });
-        } else if (e.key === 'Enter' || e.key === ' ') {
-          e.preventDefault();
-          // Trigger the focused element action
-          if (focusedElement === 'play-pause') {
-            onPlayPause();
-          } else if (focusedElement === 'station-1') {
-            onSelectStation1();
-          } else if (focusedElement === 'station-2') {
-            onSelectStation2();
-          } else if (focusedElement === 'prev-station') {
-            onPreviousStation();
-          } else if (focusedElement === 'next-station') {
-            onNextStation();
-          } else if (focusedElement === 'mute') {
-            onToggleMute();
+      // 2. Spatial Navigation on TV (D-Pad Arrows and Center button)
+      const isUp = e.key === 'ArrowUp' || code === 19;
+      const isDown = e.key === 'ArrowDown' || code === 20;
+      const isLeft = e.key === 'ArrowLeft' || code === 21;
+      const isRight = e.key === 'ArrowRight' || code === 22;
+      const isEnter = e.key === 'Enter' || e.key === ' ' || code === 23 || code === 66;
+
+      if (isEnter) {
+        e.preventDefault();
+        handleSelectFocused();
+        return;
+      }
+
+      if (isUp || isDown || isLeft || isRight) {
+        e.preventDefault();
+        
+        setFocusedElement((current) => {
+          const isControlBtn = ['prev-station', 'play-pause', 'next-station', 'mute'].includes(current);
+          const isStationItem = current.startsWith('station-');
+          const isAddBtn = current === 'add-station';
+
+          if (isRight) {
+            if (current === 'prev-station') return 'play-pause';
+            if (current === 'play-pause') return 'next-station';
+            if (current === 'next-station') return 'mute';
+            if (isControlBtn && stations.length > 0) return `station-${stations[0].id}`;
+            return current;
           }
-        }
+
+          if (isLeft) {
+            if (isStationItem || isAddBtn) return 'play-pause';
+            if (current === 'mute') return 'next-station';
+            if (current === 'next-station') return 'play-pause';
+            if (current === 'play-pause') return 'prev-station';
+            return current;
+          }
+
+          if (isDown) {
+            if (isControlBtn) {
+              return 'play-pause';
+            }
+            if (isStationItem) {
+              const currentId = current.replace('station-', '');
+              const currentIndex = stations.findIndex((s) => s.id === currentId);
+              if (currentIndex >= 0 && currentIndex < stations.length - 1) {
+                return `station-${stations[currentIndex + 1].id}`;
+              }
+              return 'add-station';
+            }
+            return current;
+          }
+
+          if (isUp) {
+            if (isAddBtn && stations.length > 0) {
+              return `station-${stations[stations.length - 1].id}`;
+            }
+            if (isStationItem) {
+              const currentId = current.replace('station-', '');
+              const currentIndex = stations.findIndex((s) => s.id === currentId);
+              if (currentIndex > 0) {
+                return `station-${stations[currentIndex - 1].id}`;
+              }
+              return `station-${stations[0].id}`;
+            }
+            return current;
+          }
+
+          return current;
+        });
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [
-    focusedElement,
+    handleSelectFocused,
     onPlayPause,
     onNextStation,
     onPreviousStation,
-    onSelectStation1,
-    onSelectStation2,
-    onToggleMute,
+    stations,
     isTVMode,
   ]);
 

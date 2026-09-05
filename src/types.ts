@@ -4,6 +4,7 @@ export interface RadioStation {
   streamUrl: string;
   subtitle?: string;
   badge?: string;
+  isCustom?: boolean;
 }
 
 export type PlayerStatus = 'idle' | 'loading' | 'playing' | 'paused' | 'error';
