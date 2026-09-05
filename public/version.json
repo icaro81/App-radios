@@ -1,8 +1,8 @@
 {
-  "versionName": "1.0.4",
-  "versionCode": 4,
+  "versionName": "1.0.5",
+  "versionCode": 5,
   "releaseDate": "2026-09-05",
-  "title": "Radio Cristal HD v1.0.4",
-  "notes": "Vúmetro optimizado de 8 bandas, cuadrícula de sintonías 2x2 y soporte de actualización directa sobre la versión anterior.",
+  "title": "Radio Cristal HD v1.0.5",
+  "notes": "Corrección de pegado y guardado de enlaces de streaming en Android, botón rápido 'Pegar enlace', y actualización directa sin desinstalar.",
   "downloadUrl": ""
 }
