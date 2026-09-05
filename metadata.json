@@ -1,0 +1,7 @@
+{
+  "name": "Radio Player",
+  "description": "Reproductor minimalista de radio online con acabado de cristal negro brillante.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
+

@@ -1,0 +1,152 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient (Obsidian Glass) -->
+    <radialGradient id="bgGrad" cx="50%" cy="35%" r="75%">
+      <stop offset="0%" stop-color="#22222d"/>
+      <stop offset="50%" stop-color="#0e0e14"/>
+      <stop offset="100%" stop-color="#050508"/>
+    </radialGradient>
+
+    <!-- Glass Rim Bevel -->
+    <linearGradient id="rimGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.5"/>
+      <stop offset="50%" stop-color="#ffffff" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.02"/>
+    </linearGradient>
+
+    <!-- Glass Specular Reflection Sheen -->
+    <linearGradient id="sheenGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.22"/>
+      <stop offset="30%" stop-color="#ffffff" stop-opacity="0.05"/>
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Metallic Chrome / Platinum Gradients -->
+    <linearGradient id="chromeLight" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#7a7a8c"/>
+      <stop offset="25%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#b0b0c2"/>
+      <stop offset="75%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#555566"/>
+    </linearGradient>
+
+    <linearGradient id="chromeDark" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#2a2a35"/>
+      <stop offset="35%" stop-color="#555566"/>
+      <stop offset="65%" stop-color="#888899"/>
+      <stop offset="100%" stop-color="#1f1f28"/>
+    </linearGradient>
+
+    <linearGradient id="goldGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8fafc" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#94a3b8" stop-opacity="0.6"/>
+    </linearGradient>
+
+    <linearGradient id="headbandGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Base App Background (Squircle with safe zone for maskable icons) -->
+  <rect width="512" height="512" fill="#050508"/>
+  <rect x="28" y="28" width="456" height="456" rx="100" fill="url(#bgGrad)" stroke="url(#rimGrad)" stroke-width="3"/>
+  
+  <!-- Diagonal Glass Specular Flare -->
+  <path d="M 28 140 L 484 28 L 28 28 Z" fill="url(#sheenGrad)"/>
+
+  <!-- Ambient Glow Behind Mic Capsule -->
+  <circle cx="256" cy="265" r="130" fill="#ffffff" opacity="0.04" filter="blur(20px)"/>
+
+  <!-- ============================================== -->
+  <!-- VINTAGE CONDENSER MICROPHONE -->
+  <!-- ============================================== -->
+
+  <!-- Mic Stand & Base Rod -->
+  <rect x="248" y="380" width="16" height="60" rx="3" fill="url(#chromeDark)"/>
+  <circle cx="256" cy="385" r="9" fill="url(#chromeLight)"/>
+
+  <!-- Mic Shockmount Ring (Suspension cradle) -->
+  <ellipse cx="256" cy="345" rx="72" ry="24" fill="none" stroke="url(#chromeLight)" stroke-width="6" opacity="0.85"/>
+  <ellipse cx="256" cy="345" rx="58" ry="19" fill="none" stroke="#ffffff" stroke-width="2" stroke-dasharray="4,6" opacity="0.4"/>
+  <line x1="202" y1="345" x2="216" y2="345" stroke="#ffffff" stroke-width="4"/>
+  <line x1="296" y1="345" x2="310" y2="345" stroke="#ffffff" stroke-width="4"/>
+
+  <!-- Mic Lower Body (Solid Chrome Cylinder) -->
+  <rect x="218" y="285" width="76" height="75" rx="6" fill="url(#chromeDark)"/>
+  <rect x="218" y="285" width="76" height="75" rx="6" stroke="url(#chromeLight)" stroke-width="2" fill="none"/>
+  
+  <!-- Mic Vintage Badge / Emblem -->
+  <rect x="246" y="308" width="20" height="28" rx="3" fill="url(#chromeLight)"/>
+  <circle cx="256" cy="322" r="5" fill="#0c0d12"/>
+
+  <!-- Mic Mid-Band Collar -->
+  <rect x="214" y="276" width="84" height="12" rx="4" fill="url(#chromeLight)"/>
+
+  <!-- Mic Grille / Capsule Body (Classic Ribbed Condenser Capsule) -->
+  <!-- Capsule Outer Dome & Frame -->
+  <path d="M 218 276 L 218 205 C 218 165, 294 165, 294 205 L 294 276 Z" fill="#12131a" stroke="url(#chromeLight)" stroke-width="4"/>
+
+  <!-- Inner Mesh Acoustic Screen Texture -->
+  <path d="M 224 270 L 224 208 C 224 174, 288 174, 288 208 L 288 270 Z" fill="#1d1e28" opacity="0.9"/>
+  
+  <!-- Horizontal Vintage Grille Bars -->
+  <line x1="221" y1="190" x2="291" y2="190" stroke="url(#chromeLight)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="220" y1="205" x2="292" y2="205" stroke="url(#chromeLight)" stroke-width="3" stroke-linecap="round"/>
+  <line x1="220" y1="220" x2="292" y2="220" stroke="url(#chromeLight)" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="220" y1="235" x2="292" y2="235" stroke="url(#chromeLight)" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="220" y1="250" x2="292" y2="250" stroke="url(#chromeLight)" stroke-width="3.5" stroke-linecap="round"/>
+  <line x1="220" y1="265" x2="292" y2="265" stroke="url(#chromeLight)" stroke-width="3.5" stroke-linecap="round"/>
+
+  <!-- Vertical Capsule Center Ridge -->
+  <line x1="256" y1="172" x2="256" y2="274" stroke="#ffffff" stroke-width="2.5" opacity="0.75"/>
+
+  <!-- ============================================== -->
+  <!-- STUDIO HEADPHONES DRAPED OVER THE MIC -->
+  <!-- ============================================== -->
+
+  <!-- Headband Arch (Draped elegantly over the top of the capsule) -->
+  <path d="M 148 248 C 148 112, 364 112, 364 248" fill="none" stroke="#0a0a0f" stroke-width="28" stroke-linecap="round"/>
+  <path d="M 148 248 C 148 114, 364 114, 364 248" fill="none" stroke="url(#headbandGrad)" stroke-width="20" stroke-linecap="round"/>
+  <path d="M 170 200 C 170 128, 342 128, 342 200" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" opacity="0.8"/>
+
+  <!-- Headband Padding Texture Cushions -->
+  <path d="M 195 152 C 220 142, 292 142, 317 152" fill="none" stroke="#181822" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Left Headphone Fork / Slider -->
+  <line x1="148" y1="240" x2="148" y2="265" stroke="url(#chromeLight)" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="148" cy="265" r="7" fill="url(#chromeLight)"/>
+
+  <!-- Right Headphone Fork / Slider -->
+  <line x1="364" y1="240" x2="364" y2="265" stroke="url(#chromeLight)" stroke-width="8" stroke-linecap="round"/>
+  <circle cx="364" cy="265" r="7" fill="url(#chromeLight)"/>
+
+  <!-- Left Earcup (Over-Ear Studio Cup angled resting against mic) -->
+  <g transform="rotate(12 150 285)">
+    <!-- Outer Cup Housing -->
+    <rect x="122" y="240" width="56" height="88" rx="24" fill="url(#chromeDark)" stroke="url(#chromeLight)" stroke-width="3"/>
+    <!-- Outer Decorative Metal Ring -->
+    <ellipse cx="150" cy="284" rx="20" ry="32" fill="#12131c" stroke="#ffffff" stroke-width="1.5" opacity="0.6"/>
+    <!-- Center Pivot Dot -->
+    <circle cx="150" cy="284" r="6" fill="url(#chromeLight)"/>
+    <!-- Leather Plush Cushion Cushion -->
+    <rect x="160" y="246" width="22" height="76" rx="11" fill="#08080d" stroke="url(#chromeLight)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Right Earcup (Over-Ear Studio Cup angled resting against mic) -->
+  <g transform="rotate(-12 362 285)">
+    <!-- Outer Cup Housing -->
+    <rect x="334" y="240" width="56" height="88" rx="24" fill="url(#chromeDark)" stroke="url(#chromeLight)" stroke-width="3"/>
+    <!-- Outer Decorative Metal Ring -->
+    <ellipse cx="362" cy="284" rx="20" ry="32" fill="#12131c" stroke="#ffffff" stroke-width="1.5" opacity="0.6"/>
+    <!-- Center Pivot Dot -->
+    <circle cx="362" cy="284" r="6" fill="url(#chromeLight)"/>
+    <!-- Leather Plush Cushion -->
+    <rect x="330" y="246" width="22" height="76" rx="11" fill="#08080d" stroke="url(#chromeLight)" stroke-width="1.5"/>
+  </g>
+
+  <!-- Audio Wave Sparks (Subtle energy around mic) -->
+  <path d="M 194 210 A 18 18 0 0 0 194 246" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+  <path d="M 318 210 A 18 18 0 0 1 318 246" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" opacity="0.4"/>
+</svg>
