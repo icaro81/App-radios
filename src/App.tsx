@@ -4,6 +4,9 @@ import { RadioStation, PlayerStatus } from './types';
 import { StationGrid } from './components/StationGrid';
 import { Visualizer } from './components/Visualizer';
 import { AddStationModal } from './components/AddStationModal';
+import { UpdateModal } from './components/UpdateModal';
+import { checkAppUpdate, UpdateInfo } from './services/updateChecker';
+import { APP_VERSION } from './version';
 import { useMediaSession } from './hooks/useMediaSession';
 import { 
   Play, 
@@ -11,7 +14,8 @@ import {
   Volume2, 
   VolumeX, 
   RotateCw, 
-  AlertCircle
+  AlertCircle,
+  Sparkles
 } from 'lucide-react';
 
 export default function App() {
@@ -38,6 +42,11 @@ export default function App() {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState<boolean>(false);
   const [analyser, setAnalyser] = useState<AnalyserNode | null>(null);
+
+  // In-App version update state
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
+  const [isCheckingUpdate, setIsCheckingUpdate] = useState<boolean>(false);
 
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
@@ -248,6 +257,36 @@ export default function App() {
     setIsMuted((prev) => !prev);
   }, []);
 
+  // In-App update check handler
+  const performUpdateCheck = useCallback(async (isManual = false) => {
+    setIsCheckingUpdate(true);
+    try {
+      const info = await checkAppUpdate();
+      setIsCheckingUpdate(false);
+      if (info) {
+        setUpdateInfo(info);
+        if (info.hasUpdate || isManual) {
+          setIsUpdateModalOpen(true);
+        }
+      } else if (isManual) {
+        setIsUpdateModalOpen(true);
+      }
+    } catch {
+      setIsCheckingUpdate(false);
+      if (isManual) {
+        setIsUpdateModalOpen(true);
+      }
+    }
+  }, []);
+
+  // Automatic check on app launch
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      performUpdateCheck(false);
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [performUpdateCheck]);
+
   // Media Notification & Lockscreen Controls on Android
   useMediaSession({
     currentStation,
@@ -441,6 +480,20 @@ export default function App() {
               onOpenAddModal={() => setIsAddModalOpen(true)}
             />
           </div>
+
+          {/* App Version & In-App Update Trigger */}
+          <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between px-1 text-[10px] font-mono text-neutral-500">
+            <span>Radio Cristal HD v{APP_VERSION}</span>
+            <button
+              id="check-updates-btn"
+              onClick={() => performUpdateCheck(true)}
+              className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              title="Buscar actualizaciones"
+            >
+              <Sparkles className="w-3 h-3 text-emerald-400" />
+              <span>{isCheckingUpdate ? 'Comprobando...' : 'Buscar actualización'}</span>
+            </button>
+          </div>
         </section>
       </div>
 
@@ -449,6 +502,15 @@ export default function App() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddStation={handleAddStation}
+      />
+
+      {/* In-App Update Modal */}
+      <UpdateModal
+        isOpen={isUpdateModalOpen}
+        updateInfo={updateInfo}
+        onClose={() => setIsUpdateModalOpen(false)}
+        onCheckAgain={() => performUpdateCheck(true)}
+        isChecking={isCheckingUpdate}
       />
     </main>
   );

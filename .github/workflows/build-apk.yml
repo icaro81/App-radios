@@ -7,6 +7,9 @@ on:
     branches: [ main, master ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -49,12 +52,30 @@ jobs:
           chmod +x gradlew
 
       - name: Build APK with Gradle
+        env:
+          GITHUB_RUN_NUMBER: ${{ github.run_number }}
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon
 
-      - name: Upload APK
+      - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Radio-Cristal-HD-app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
+
+      - name: Create or Update GitHub Release
+        if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v1.0.${{ github.run_number }}
+          name: Radio Cristal HD v1.0.${{ github.run_number }}
+          body: |
+            ### Actualización de Radio Cristal HD (Build ${{ github.run_number }})
+            - Esta versión se instala **directamente encima** de la versión previa en tu celular sin necesidad de desinstalar.
+            - Descarga el archivo `app-debug.apk` adjunto para actualizar de inmediato.
+          files: android/app/build/outputs/apk/debug/app-debug.apk
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
