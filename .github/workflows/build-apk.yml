@@ -21,7 +21,7 @@ jobs:
           node-version: 20
 
       - name: Install dependencies
-        run: npm ci || npm install
+        run: npm install
 
       - name: Build Web Application
         run: npm run build
@@ -31,25 +31,30 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'gradle'
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
+        with:
+          cmdline-tools-version: 11076708
 
       - name: Sync Capacitor Android
-        run: npx cap sync android
-
-      - name: Grant execute permission for gradlew
         run: |
-          sed -i 's/\r$//' ./android/gradlew
-          chmod +x ./android/gradlew
+          npx cap sync android
 
-      - name: Build Android APK (Debug)
+      - name: Make Gradlew Executable
         run: |
           cd android
-          ./gradlew assembleDebug --no-daemon --stacktrace
+          dos2unix gradlew 2>/dev/null || sed -i 's/\r$//' gradlew
+          chmod +x gradlew
 
-      - name: Upload APK Artifact
+      - name: Build APK with Gradle
+        run: |
+          cd android
+          ./gradlew assembleDebug --no-daemon
+
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Radio-Cristal-HD-app-debug.apk
+          name: Radio-Cristal-HD-app-debug
           path: android/app/build/outputs/apk/debug/app-debug.apk
