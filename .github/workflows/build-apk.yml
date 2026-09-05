@@ -51,6 +51,14 @@ jobs:
           dos2unix gradlew 2>/dev/null || sed -i 's/\r$//' gradlew
           chmod +x gradlew
 
+      - name: Restore Consistent Signing Keystore
+        run: |
+          if [ -f android/app/debug.keystore.base64 ]; then
+            base64 -d android/app/debug.keystore.base64 > android/app/debug.keystore
+            echo "Consistent signing keystore restored successfully."
+          fi
+          ls -lh android/app/debug.keystore || true
+
       - name: Build APK with Gradle
         env:
           GITHUB_RUN_NUMBER: ${{ github.run_number }}
