@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Radio Cristal HD</string>
+    <string name="title_activity_main">Radio Cristal HD</string>
+    <string name="package_name">com.radiocristal.app</string>
+    <string name="custom_url_scheme">com.radiocristal.app</string>
+</resources>
