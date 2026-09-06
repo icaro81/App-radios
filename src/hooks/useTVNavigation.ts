@@ -7,6 +7,8 @@ interface TVNavigationOptions {
   onPreviousStation: () => void;
   onSelectStation: (station: RadioStation) => void;
   onToggleMute: () => void;
+  onVolumeUp?: () => void;
+  onVolumeDown?: () => void;
   onOpenAddModal?: () => void;
   stations: RadioStation[];
   isTVMode: boolean;
@@ -18,6 +20,8 @@ export function useTVNavigation({
   onPreviousStation,
   onSelectStation,
   onToggleMute,
+  onVolumeUp,
+  onVolumeDown,
   onOpenAddModal,
   stations,
   isTVMode,
@@ -55,8 +59,16 @@ export function useTVNavigation({
   ]);
 
   useEffect(() => {
+    if (!isTVMode) return;
+
     const handleKeyDown = (e: KeyboardEvent) => {
-      // 1. Native TV Remote Media Buttons (Play/Pause, Next, Prev)
+      // Ignore navigation shortcuts if typing in an input or textarea
+      const target = e.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) {
+        return;
+      }
+
+      // 1. Native TV Remote Media & Volume Buttons
       const code = e.keyCode || e.which;
       
       // Standard Android TV key codes:
@@ -65,18 +77,11 @@ export function useTVNavigation({
       // KEYCODE_MEDIA_PAUSE = 127
       // KEYCODE_MEDIA_NEXT = 87
       // KEYCODE_MEDIA_PREVIOUS = 88
-      // KEYCODE_DPAD_UP = 19
-      // KEYCODE_DPAD_DOWN = 20
-      // KEYCODE_DPAD_LEFT = 21
-      // KEYCODE_DPAD_RIGHT = 22
-      // KEYCODE_DPAD_CENTER / ENTER = 23, 66
+      // KEYCODE_VOLUME_UP = 24
+      // KEYCODE_VOLUME_DOWN = 25
       // KEYCODE_VOLUME_MUTE = 164
 
-      if (
-        e.key === 'MediaPlayPause' ||
-        e.code === 'MediaPlayPause' ||
-        code === 85
-      ) {
+      if (e.key === 'MediaPlayPause' || e.code === 'MediaPlayPause' || code === 85) {
         e.preventDefault();
         onPlayPause();
         return;
@@ -102,7 +107,35 @@ export function useTVNavigation({
         return;
       }
 
-      // 2. Spatial Navigation on TV (D-Pad Arrows and Center button)
+      // Volume controls (+ / - / Mute / TV remote keys)
+      if (e.key === '+' || e.key === '=' || code === 24) {
+        e.preventDefault();
+        onVolumeUp?.();
+        return;
+      }
+      if (e.key === '-' || e.key === '_' || code === 25) {
+        e.preventDefault();
+        onVolumeDown?.();
+        return;
+      }
+      if (code === 164 || e.key === 'AudioVolumeMute') {
+        e.preventDefault();
+        onToggleMute();
+        return;
+      }
+
+      // 2. Direct Station Select with Numeric Keys (1 to 9)
+      if (/^[1-9]$/.test(e.key)) {
+        const index = parseInt(e.key, 10) - 1;
+        if (stations[index]) {
+          e.preventDefault();
+          onSelectStation(stations[index]);
+          setFocusedElement(`station-${stations[index].id}`);
+          return;
+        }
+      }
+
+      // 3. Spatial Navigation on TV (D-Pad Arrows and Center button)
       const isUp = e.key === 'ArrowUp' || code === 19;
       const isDown = e.key === 'ArrowDown' || code === 20;
       const isLeft = e.key === 'ArrowLeft' || code === 21;
@@ -181,6 +214,10 @@ export function useTVNavigation({
     onPlayPause,
     onNextStation,
     onPreviousStation,
+    onToggleMute,
+    onVolumeUp,
+    onVolumeDown,
+    onSelectStation,
     stations,
     isTVMode,
   ]);

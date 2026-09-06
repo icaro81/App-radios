@@ -5,9 +5,11 @@ import { StationGrid } from './components/StationGrid';
 import { Visualizer } from './components/Visualizer';
 import { AddStationModal } from './components/AddStationModal';
 import { UpdateModal } from './components/UpdateModal';
+import { AndroidTVView } from './components/AndroidTVView';
 import { checkAppUpdate, UpdateInfo } from './services/updateChecker';
 import { APP_VERSION } from './version';
 import { useMediaSession } from './hooks/useMediaSession';
+import { useTVNavigation } from './hooks/useTVNavigation';
 import { 
   Play, 
   Pause, 
@@ -15,7 +17,8 @@ import {
   VolumeX, 
   RotateCw, 
   AlertCircle,
-  Sparkles
+  Sparkles,
+  Tv
 } from 'lucide-react';
 
 export default function App() {
@@ -300,6 +303,64 @@ export default function App() {
     onPreviousStation: prevStation,
   });
 
+  // Mode and Orientation adaptation
+  const [preferredMode, setPreferredMode] = useState<'auto' | 'mobile' | 'tv'>(() => {
+    const saved = localStorage.getItem('radio_cristal_preferred_mode');
+    if (saved === 'auto' || saved === 'mobile' || saved === 'tv') {
+      return saved;
+    }
+    return 'auto';
+  });
+
+  const [isLandscape, setIsLandscape] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth > window.innerHeight && window.innerWidth >= 640;
+    }
+    return false;
+  });
+
+  useEffect(() => {
+    const handleOrientation = () => {
+      const landscape = window.innerWidth > window.innerHeight && window.innerWidth >= 640;
+      setIsLandscape(landscape);
+    };
+    window.addEventListener('resize', handleOrientation);
+    window.addEventListener('orientationchange', handleOrientation);
+    return () => {
+      window.removeEventListener('resize', handleOrientation);
+      window.removeEventListener('orientationchange', handleOrientation);
+    };
+  }, []);
+
+  const activeMode: 'mobile' | 'tv' =
+    preferredMode === 'auto' ? (isLandscape ? 'tv' : 'mobile') : preferredMode;
+
+  // TV remote & keyboard D-Pad navigation
+  const { focusedElement, setFocusedElement } = useTVNavigation({
+    onPlayPause: togglePlayPause,
+    onNextStation: nextStation,
+    onPreviousStation: prevStation,
+    onSelectStation: playStation,
+    onToggleMute: toggleMute,
+    onVolumeUp: () => {
+      setVolume((v) => {
+        const next = Math.min(1, Number((v + 0.05).toFixed(2)));
+        if (isMuted) setIsMuted(false);
+        return next;
+      });
+    },
+    onVolumeDown: () => {
+      setVolume((v) => {
+        const next = Math.max(0, Number((v - 0.05).toFixed(2)));
+        if (isMuted) setIsMuted(false);
+        return next;
+      });
+    },
+    onOpenAddModal: () => setIsAddModalOpen(true),
+    stations,
+    isTVMode: activeMode === 'tv',
+  });
+
   const isPlaying = playerStatus === 'playing';
   const isLoading = playerStatus === 'loading';
 
@@ -310,8 +371,39 @@ export default function App() {
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full blur-3xl" />
       </div>
 
-      {/* Main Mobile Screen Layout */}
-      <div className="relative z-10 w-full max-w-md mx-auto flex flex-col gap-3 my-auto">
+      {activeMode === 'tv' ? (
+        /* Android TV / Tablet Landscape View with D-Pad focus */
+        <div className="relative z-10 w-full">
+          <AndroidTVView
+            currentStation={currentStation}
+            stations={stations}
+            playerStatus={playerStatus}
+            volume={volume}
+            isMuted={isMuted}
+            focusedElement={focusedElement}
+            analyser={analyser}
+            onPlayStation={playStation}
+            onTogglePlayPause={togglePlayPause}
+            onToggleMute={toggleMute}
+            onSwitchStation={nextStation}
+            onSetFocus={setFocusedElement}
+            onOpenAddModal={() => setIsAddModalOpen(true)}
+            onRemoveCustomStation={handleRemoveStation}
+            onVolumeChange={(vol) => {
+              setVolume(vol);
+              if (isMuted) setIsMuted(false);
+            }}
+            onCheckUpdate={() => performUpdateCheck(true)}
+            onSwitchToMobile={() => {
+              setPreferredMode('mobile');
+              localStorage.setItem('radio_cristal_preferred_mode', 'mobile');
+            }}
+            isLandscape={isLandscape}
+          />
+        </div>
+      ) : (
+        /* Main Mobile Screen Layout */
+        <div className="relative z-10 w-full max-w-md mx-auto flex flex-col gap-3 my-auto">
         
         {/* Central Crystal Radio Player Console */}
         <section
@@ -484,18 +576,33 @@ export default function App() {
           {/* App Version & In-App Update Trigger */}
           <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between px-1 text-[10px] font-mono text-neutral-500">
             <span>Radio Cristal HD v{APP_VERSION}</span>
-            <button
-              id="check-updates-btn"
-              onClick={() => performUpdateCheck(true)}
-              className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
-              title="Buscar actualizaciones"
-            >
-              <Sparkles className="w-3 h-3 text-emerald-400" />
-              <span>{isCheckingUpdate ? 'Comprobando...' : 'Buscar actualización'}</span>
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                id="toggle-tv-mode-btn"
+                onClick={() => {
+                  setPreferredMode('tv');
+                  localStorage.setItem('radio_cristal_preferred_mode', 'tv');
+                }}
+                className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                title="Activar vista TV / Tablet"
+              >
+                <Tv className="w-3 h-3 text-cyan-400" />
+                <span>Modo TV</span>
+              </button>
+              <button
+                id="check-updates-btn"
+                onClick={() => performUpdateCheck(true)}
+                className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                title="Buscar actualizaciones"
+              >
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                <span>{isCheckingUpdate ? 'Comprobando...' : 'Actualizar'}</span>
+              </button>
+            </div>
           </div>
         </section>
       </div>
+      )}
 
       {/* Add Custom Station Modal */}
       <AddStationModal
