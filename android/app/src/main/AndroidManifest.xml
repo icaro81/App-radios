@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <!-- Hardware features for TV, Auto and Mobile compatibility -->
+    <!-- Hardware features for TV and Mobile compatibility -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
-    <uses-feature android:name="android.hardware.type.automotive" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -14,11 +13,6 @@
         android:supportsRtl="true"
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
-
-        <!-- Android Auto / Automotive Media Indicator -->
-        <meta-data
-            android:name="com.google.android.gms.car.application"
-            android:resource="@xml/automotive_app_desc" />
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
