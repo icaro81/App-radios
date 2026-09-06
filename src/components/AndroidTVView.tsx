@@ -265,6 +265,17 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                 <span className="text-[10px] font-mono text-neutral-400 w-8 text-right">
                   {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
                 </span>
+
+                {onOpenEqualizer && (
+                  <button
+                    id="tv-eq-quick-btn"
+                    onClick={onOpenEqualizer}
+                    className="p-1.5 rounded-xl cursor-pointer text-emerald-400 hover:text-emerald-300 hover:bg-white/10 transition-colors shrink-0"
+                    title="Ecualizador de audio de 4 bandas"
+                  >
+                    <SlidersHorizontal className="w-4 h-4" />
+                  </button>
+                )}
               </div>
             </div>
           </div>

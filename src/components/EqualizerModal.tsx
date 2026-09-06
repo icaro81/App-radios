@@ -48,30 +48,30 @@ export const EqualizerModal = ({
   ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 landscape:p-2 animate-in fade-in duration-200 overflow-hidden">
       <div
-        className="w-full max-w-md rounded-3xl glass-surface border border-white/20 p-6 sm:p-7 text-white shadow-2xl relative overflow-hidden"
+        className="w-full max-w-md landscape:max-w-2xl sm:max-w-xl max-h-[96vh] flex flex-col rounded-2xl sm:rounded-3xl glass-surface border border-white/20 p-3.5 sm:p-5 landscape:p-3.5 text-white shadow-2xl relative overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Specular sheen */}
         <div className="absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
 
-        {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/15 text-white">
-              <SlidersHorizontal className="w-5 h-5 text-emerald-400" />
+        {/* Header - Compact on landscape */}
+        <div className="flex items-center justify-between mb-2.5 landscape:mb-2 shrink-0">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-white/10 flex items-center justify-center border border-white/15 text-white shrink-0">
+              <SlidersHorizontal className="w-4 h-4 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-white tracking-wide">
+                <h2 className="text-sm sm:text-base font-bold text-white tracking-wide">
                   Ecualizador de Audio
                 </h2>
-                <span className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                <span className="px-1.5 py-0.5 rounded text-[8px] sm:text-[9px] font-mono font-bold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                   4 BANDAS
                 </span>
               </div>
-              <p className="text-xs text-neutral-400">
+              <p className="text-[11px] text-neutral-400 hidden sm:block landscape:hidden md:landscape:block">
                 Ajuste fino de frecuencias en tiempo real
               </p>
             </div>
@@ -86,100 +86,104 @@ export const EqualizerModal = ({
           </button>
         </div>
 
-        {/* Quick Presets */}
-        <div className="mb-6">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-[11px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
-              <Sparkles className="w-3 h-3 text-emerald-400" />
-              Perfiles Rápidos
-            </span>
-            <button
-              onClick={onReset}
-              className="text-[10px] font-mono text-neutral-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
-              title="Restablecer todas las bandas a 0 dB"
-            >
-              <RotateCcw className="w-3 h-3" />
-              <span>Restablecer</span>
-            </button>
-          </div>
-          <div className="grid grid-cols-4 gap-2">
-            {PRESETS.map((p) => (
+        {/* Scrollable Body */}
+        <div className="flex-1 overflow-y-auto pr-1 -mr-1 space-y-2.5 landscape:space-y-2 my-1">
+          {/* Quick Presets */}
+          <div>
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-[10px] font-mono uppercase tracking-wider text-neutral-400 flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-emerald-400" />
+                Perfiles Rápidos
+              </span>
               <button
-                key={p.name}
-                onClick={() => onApplyPreset(p.bands)}
-                className="px-2 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-center transition-all active:scale-95 cursor-pointer flex flex-col items-center justify-center gap-1"
+                onClick={onReset}
+                className="text-[10px] font-mono text-neutral-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                title="Restablecer todas las bandas a 0 dB"
               >
-                <span className="text-xs">{p.icon}</span>
-                <span className="text-[10px] font-semibold text-neutral-200 tracking-tight">
-                  {p.name}
-                </span>
+                <RotateCcw className="w-3 h-3" />
+                <span>Restablecer</span>
               </button>
-            ))}
+            </div>
+            <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
+              {PRESETS.map((p) => (
+                <button
+                  key={p.name}
+                  onClick={() => onApplyPreset(p.bands)}
+                  className="px-1.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-center transition-all active:scale-95 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1"
+                >
+                  <span className="text-xs">{p.icon}</span>
+                  <span className="text-[10px] font-semibold text-neutral-200 tracking-tight whitespace-nowrap">
+                    {p.name}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* 4 Frequency Bands Sliders */}
-        <div className="space-y-4 mb-6">
-          {bandConfigs.map(({ key, label, freq, desc }) => {
-            const val = bands[key];
-            const formattedVal = val > 0 ? `+${val.toFixed(1)} dB` : `${val.toFixed(1)} dB`;
-            return (
-              <div
-                key={key}
-                className="p-3 rounded-2xl bg-black/40 border border-white/10 flex flex-col gap-2"
-              >
-                <div className="flex items-center justify-between text-xs">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-white tracking-wide">{label}</span>
-                    <span className="text-[10px] font-mono text-neutral-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
-                      {freq}
-                    </span>
-                    <span className="text-[10px] text-neutral-500 hidden sm:inline">
-                      ({desc})
+          {/* 4 Frequency Bands Sliders - 2 columns on landscape/tablets, 1 column on narrow portrait */}
+          <div className="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 gap-2 sm:gap-2.5 pt-1">
+            {bandConfigs.map(({ key, label, freq, desc }) => {
+              const val = bands[key];
+              const formattedVal = val > 0 ? `+${val.toFixed(1)} dB` : `${val.toFixed(1)} dB`;
+              return (
+                <div
+                  key={key}
+                  className="p-2.5 sm:p-3 rounded-xl bg-black/40 border border-white/10 flex flex-col gap-1.5"
+                >
+                  <div className="flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-1.5">
+                      <span className="font-bold text-white text-xs tracking-wide">{label}</span>
+                      <span className="text-[9px] font-mono text-neutral-400 bg-white/5 px-1.5 py-0.5 rounded border border-white/5">
+                        {freq}
+                      </span>
+                      <span className="text-[9px] text-neutral-500 hidden xl:inline">
+                        ({desc})
+                      </span>
+                    </div>
+                    <span
+                      className={`font-mono text-xs font-bold ${
+                        val > 0
+                          ? 'text-emerald-400'
+                          : val < 0
+                          ? 'text-rose-400'
+                          : 'text-neutral-400'
+                      }`}
+                    >
+                      {formattedVal}
                     </span>
                   </div>
-                  <span
-                    className={`font-mono text-xs font-bold ${
-                      val > 0
-                        ? 'text-emerald-400'
-                        : val < 0
-                        ? 'text-rose-400'
-                        : 'text-neutral-400'
-                    }`}
-                  >
-                    {formattedVal}
-                  </span>
-                </div>
 
-                {/* Range Slider */}
-                <div className="flex items-center gap-3">
-                  <span className="text-[9px] font-mono text-neutral-500 w-8 text-right">-12dB</span>
-                  <input
-                    type="range"
-                    min={-12}
-                    max={12}
-                    step={0.5}
-                    value={val}
-                    onChange={(e) => onChangeBand(key, parseFloat(e.target.value))}
-                    className="flex-1 accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer transition-all"
-                  />
-                  <span className="text-[9px] font-mono text-neutral-500 w-8">+12dB</span>
+                  {/* Range Slider */}
+                  <div className="flex items-center gap-2">
+                    <span className="text-[8px] font-mono text-neutral-500 w-6 text-right">-12</span>
+                    <input
+                      type="range"
+                      min={-12}
+                      max={12}
+                      step={0.5}
+                      value={val}
+                      onChange={(e) => onChangeBand(key, parseFloat(e.target.value))}
+                      className="flex-1 accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer transition-all focus:outline-none focus:ring-1 focus:ring-emerald-400/50"
+                      aria-label={`${label} ${freq}`}
+                    />
+                    <span className="text-[8px] font-mono text-neutral-500 w-6">+12</span>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
         {/* Bottom Status / Close */}
-        <div className="flex items-center justify-between pt-2 border-t border-white/10">
-          <div className="flex items-center gap-1.5 text-[11px] text-neutral-400">
+        <div className="flex items-center justify-between pt-2 mt-1 border-t border-white/10 shrink-0">
+          <div className="flex items-center gap-1.5 text-[10px] sm:text-[11px] text-neutral-400">
             <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
             <span>Filtros Biquad activos</span>
           </div>
 
           <button
             onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-white text-black font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:bg-neutral-200 transition-all cursor-pointer"
+            className="px-4 py-1.5 rounded-xl bg-white text-black font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:bg-neutral-200 transition-all cursor-pointer"
           >
             Listo
           </button>
