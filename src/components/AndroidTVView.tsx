@@ -14,7 +14,8 @@ import {
   AlertCircle,
   Radio,
   Signal,
-  Loader2
+  Loader2,
+  SlidersHorizontal
 } from 'lucide-react';
 
 interface AndroidTVViewProps {
@@ -36,6 +37,7 @@ interface AndroidTVViewProps {
   onRemoveCustomStation: (id: string) => void;
   onVolumeChange?: (volume: number) => void;
   onCheckUpdate?: () => void;
+  onOpenEqualizer?: () => void;
   isCheckingUpdate?: boolean;
   isLandscape?: boolean;
 }
@@ -59,6 +61,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
   onRemoveCustomStation,
   onVolumeChange,
   onCheckUpdate,
+  onOpenEqualizer,
   isCheckingUpdate,
 }) => {
   const isPlaying = playerStatus === 'playing';
@@ -108,8 +111,26 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   </span>
                 </div>
 
-                <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400">
-                  {currentStation.badge || 'ESTÉREO HD'}
+                <div className="flex items-center gap-2">
+                  {onOpenEqualizer && (
+                    <button
+                      id="tv-eq-btn"
+                      onClick={onOpenEqualizer}
+                      onMouseEnter={() => onSetFocus('eq-btn')}
+                      className={`flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
+                        focusedElement === 'eq-btn'
+                          ? 'border-white bg-white text-black font-bold scale-105 ring-2 ring-white/80 shadow-[0_0_12px_rgba(255,255,255,0.4)]'
+                          : 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+                      }`}
+                      title="Ecualizador de audio (4 Bandas)"
+                    >
+                      <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                      <span>EQ 4-BANDAS</span>
+                    </button>
+                  )}
+                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400">
+                    {currentStation.badge || 'ESTÉREO HD'}
+                  </div>
                 </div>
               </div>
 
@@ -373,6 +394,16 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
             <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between px-1 text-[10px] font-mono text-neutral-500">
               <span>Radio Cristal HD v{APP_VERSION}</span>
               <div className="flex items-center gap-3">
+                {onOpenEqualizer && (
+                  <button
+                    onClick={onOpenEqualizer}
+                    className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    title="Ecualizador de audio"
+                  >
+                    <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                    <span>Ecualizador</span>
+                  </button>
+                )}
                 {onCheckUpdate && (
                   <button
                     id="tv-check-updates-btn"

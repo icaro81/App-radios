@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { RadioStation } from '../types';
-import { Plus, X, Radio, Link as LinkIcon, Tag, ClipboardPaste } from 'lucide-react';
+import { Plus, X, Radio, Link as LinkIcon, Tag, ClipboardPaste, Check } from 'lucide-react';
+import { Clipboard } from '@capacitor/clipboard';
 
 interface AddStationModalProps {
   isOpen: boolean;
@@ -18,6 +19,7 @@ export const AddStationModal = ({
   const [subtitle, setSubtitle] = useState('');
   const [badge, setBadge] = useState('CUSTOM');
   const [error, setError] = useState<string | null>(null);
+  const [pasteSuccess, setPasteSuccess] = useState(false);
 
   const nameInputRef = useRef<HTMLInputElement | null>(null);
   const urlInputRef = useRef<HTMLInputElement | null>(null);
@@ -27,20 +29,47 @@ export const AddStationModal = ({
   if (!isOpen) return null;
 
   const handlePasteClipboard = async () => {
+    let pastedText = '';
+
+    // 1. Try native Android / Capacitor clipboard first (bypasses WebView security restrictions)
     try {
-      if (navigator.clipboard && navigator.clipboard.readText) {
-        const text = await navigator.clipboard.readText();
-        if (text) {
-          const clean = text.trim();
-          setStreamUrl(clean);
-          if (urlInputRef.current) {
-            urlInputRef.current.value = clean;
-          }
-          setError(null);
-        }
+      const result = await Clipboard.read();
+      if (result && typeof result.value === 'string' && result.value.trim().length > 0) {
+        pastedText = result.value.trim();
       }
     } catch {
-      // If clipboard permission is restricted on WebView, user can still long-press paste
+      // Capacitor clipboard failed or running in standard browser
+    }
+
+    // 2. Fallback to standard Web navigator.clipboard
+    if (!pastedText && typeof navigator !== 'undefined' && navigator.clipboard?.readText) {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (text && text.trim().length > 0) {
+          pastedText = text.trim();
+        }
+      } catch {
+        // Browser denied clipboard access
+      }
+    }
+
+    // 3. Fallback prompt if security policy completely blocked reading
+    if (!pastedText) {
+      const promptText = window.prompt('Pega aquí el enlace de la radio:');
+      if (promptText && promptText.trim().length > 0) {
+        pastedText = promptText.trim();
+      }
+    }
+
+    if (pastedText) {
+      const clean = pastedText.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+      setStreamUrl(clean);
+      if (urlInputRef.current) {
+        urlInputRef.current.value = clean;
+      }
+      setError(null);
+      setPasteSuccess(true);
+      setTimeout(() => setPasteSuccess(false), 2000);
     }
   };
 
@@ -170,10 +199,23 @@ export const AddStationModal = ({
               <button
                 type="button"
                 onClick={handlePasteClipboard}
-                className="flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors cursor-pointer"
+                className={`flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer px-2 py-0.5 rounded-lg ${
+                  pasteSuccess
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                }`}
               >
-                <ClipboardPaste className="w-3 h-3" />
-                <span>Pegar enlace</span>
+                {pasteSuccess ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    <span>¡Enlace pegado!</span>
+                  </>
+                ) : (
+                  <>
+                    <ClipboardPaste className="w-3 h-3" />
+                    <span>Pegar enlace</span>
+                  </>
+                )}
               </button>
             </div>
             <div className="relative">

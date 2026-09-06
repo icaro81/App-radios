@@ -10,6 +10,7 @@ interface TVNavigationOptions {
   onVolumeUp?: () => void;
   onVolumeDown?: () => void;
   onOpenAddModal?: () => void;
+  onOpenEqualizer?: () => void;
   stations: RadioStation[];
   isTVMode: boolean;
 }
@@ -23,10 +24,11 @@ export function useTVNavigation({
   onVolumeUp,
   onVolumeDown,
   onOpenAddModal,
+  onOpenEqualizer,
   stations,
   isTVMode,
 }: TVNavigationOptions) {
-  // Can be 'play-pause' | 'prev-station' | 'next-station' | 'mute' | 'station-${id}' | 'add-station'
+  // Can be 'play-pause' | 'prev-station' | 'next-station' | 'mute' | 'eq-btn' | 'station-${id}' | 'add-station'
   const [focusedElement, setFocusedElement] = useState<string>('play-pause');
 
   const handleSelectFocused = useCallback(() => {
@@ -38,6 +40,8 @@ export function useTVNavigation({
       onNextStation();
     } else if (focusedElement === 'mute') {
       onToggleMute();
+    } else if (focusedElement === 'eq-btn') {
+      onOpenEqualizer?.();
     } else if (focusedElement === 'add-station') {
       onOpenAddModal?.();
     } else if (focusedElement.startsWith('station-')) {
@@ -53,6 +57,7 @@ export function useTVNavigation({
     onPreviousStation,
     onNextStation,
     onToggleMute,
+    onOpenEqualizer,
     onOpenAddModal,
     stations,
     onSelectStation,

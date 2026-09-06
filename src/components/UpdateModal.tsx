@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UpdateInfo } from '../services/updateChecker';
-import { DEFAULT_REPO } from '../version';
-import { Download, X, Sparkles, CheckCircle2, RefreshCw, Github, AlertTriangle, ChevronDown, ChevronUp } from 'lucide-react';
+import { DEFAULT_REPO, CURRENT_CHANGELOG } from '../version';
+import { Download, X, Sparkles, CheckCircle2, RefreshCw, Github, AlertTriangle, ChevronDown, ChevronUp, FileText } from 'lucide-react';
 
 interface UpdateModalProps {
   isOpen: boolean;
@@ -150,12 +150,29 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
                 <span className="text-emerald-400 font-semibold">Nueva: {updateInfo?.latestVersion}</span>
               </div>
 
-              {/* Release Notes */}
-              {updateInfo?.releaseNotes && (
-                <div className="p-3 rounded-xl bg-white/[0.02] border border-white/5 text-[11px] text-neutral-300 max-h-32 overflow-y-auto leading-relaxed whitespace-pre-line">
-                  {updateInfo.releaseNotes}
+              {/* Release Notes / Novedades de la versión */}
+              <div className="space-y-1.5">
+                <div className="flex items-center gap-1.5 text-[10px] uppercase font-mono tracking-wider text-emerald-400">
+                  <FileText className="w-3 h-3" />
+                  <span>Novedades y cambios:</span>
                 </div>
-              )}
+                <div className="p-3 rounded-xl bg-white/[0.04] border border-white/10 text-[11px] text-neutral-200 max-h-36 overflow-y-auto leading-relaxed space-y-1.5">
+                  {updateInfo?.releaseNotes ? (
+                    <div className="whitespace-pre-line text-neutral-300 font-normal">
+                      {updateInfo.releaseNotes}
+                    </div>
+                  ) : (
+                    <ul className="space-y-1 text-neutral-300">
+                      {CURRENT_CHANGELOG.map((item, idx) => (
+                        <li key={idx} className="flex items-start gap-1.5 text-[11px]">
+                          <span className="text-emerald-400 font-bold leading-none mt-0.5">•</span>
+                          <span className="leading-snug">{item}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </div>
+              </div>
 
               {/* Repo Warning */}
               {updateInfo?.repoNotFound && (

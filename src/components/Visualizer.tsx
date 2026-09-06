@@ -6,16 +6,12 @@ interface VisualizerProps {
   analyser?: AnalyserNode | null;
 }
 
-// 8 Balanced Studio Frequency Bands (Optimized for fluid performance on TV Box & Mobile)
-const FREQUENCY_BANDS = [
-  { name: '60Hz', start: 1, end: 3, gain: 1.2 },     // 0: Sub / Kick punch
-  { name: '150Hz', start: 3, end: 7, gain: 1.2 },    // 1: Warm Bass
-  { name: '400Hz', start: 7, end: 14, gain: 1.25 },  // 2: Snare / Low-Mid
-  { name: '1kHz', start: 14, end: 28, gain: 1.35 },  // 3: Vocal / Acoustic Mid
-  { name: '2.5kHz', start: 28, end: 55, gain: 1.45 },// 4: Lead Presence
-  { name: '5kHz', start: 55, end: 95, gain: 1.65 },  // 5: Percussion Snap
-  { name: '10kHz', start: 95, end: 160, gain: 2.0 }, // 6: Hi-Hat Treble
-  { name: '16kHz', start: 160, end: 245, gain: 2.4 },// 7: High Air Shimmer
+// 4 Real Frequency Ranges sampled from the AnalyserNode
+const REAL_AUDIO_RANGES = [
+  { name: 'Bajo', start: 1, end: 4, gain: 1.25 },          // Real 0 -> Placed at Slot 0
+  { name: 'Medio-Bajo', start: 4, end: 12, gain: 1.3 },     // Real 1 -> Placed at Slot 2
+  { name: 'Intermedio', start: 12, end: 26, gain: 1.4 },    // Real 2 -> Placed at Slot 4
+  { name: 'Agudo', start: 26, end: 58, gain: 1.85 },        // Real 3 -> Placed at Slot 6
 ];
 
 export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) => {
@@ -24,8 +20,8 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
 
   // References for zero-allocation 60fps loop
   const animFrameRef = useRef<number | null>(null);
-  const currentBarsRef = useRef<number[]>([10, 15, 12, 18, 14, 12, 9, 6]);
-  const currentPeaksRef = useRef<number[]>([12, 17, 14, 20, 16, 14, 11, 8]);
+  const currentBarsRef = useRef<number[]>([12, 16, 14, 18, 15, 13, 10, 8]);
+  const currentPeaksRef = useRef<number[]>([14, 18, 16, 20, 17, 15, 12, 10]);
   const beatClockRef = useRef<number>(0);
   const lastRegionUpdateRef = useRef<number>(0);
   const currentRegionRef = useRef<'BASS' | 'MID' | 'TREBLE' | 'BALANCE'>('BALANCE');
@@ -112,6 +108,14 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
       let realDataAvailable = false;
       const targetBands = [0, 0, 0, 0, 0, 0, 0, 0];
 
+      const time = beatClockRef.current;
+      const bpm = 126;
+      const beatPeriod = 60 / bpm;
+      const beatPhase = (time % beatPeriod) / beatPeriod;
+      const kickEnvelope = Math.max(0, Math.exp(-beatPhase * 7));
+      const hihatPhase = (time % (beatPeriod / 4)) / (beatPeriod / 4);
+      const hihatEnvelope = Math.max(0, Math.exp(-hihatPhase * 10));
+
       if (analyser && freqBuffer) {
         analyser.getByteFrequencyData(freqBuffer);
 
@@ -120,21 +124,43 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
           totalEnergy += freqBuffer[i];
         }
 
-        if (totalEnergy > 50) {
+        if (totalEnergy > 40) {
           realDataAvailable = true;
 
-          for (let i = 0; i < FREQUENCY_BANDS.length; i++) {
-            const band = FREQUENCY_BANDS[i];
+          // Compute the 4 real bands from audio FFT
+          const realValues = [0, 0, 0, 0];
+          for (let i = 0; i < REAL_AUDIO_RANGES.length; i++) {
+            const range = REAL_AUDIO_RANGES[i];
             let sum = 0;
-            const count = Math.max(1, band.end - band.start);
-            for (let b = band.start; b < band.end && b < freqBuffer.length; b++) {
+            let count = 0;
+            for (let b = range.start; b < range.end && b < freqBuffer.length; b++) {
               sum += freqBuffer[b];
+              count++;
             }
-            const avg = sum / count;
-            let scaled = (avg / 255) * 100 * band.gain;
-            scaled = Math.pow(Math.min(scaled / 100, 1), 1.25) * 100;
-            targetBands[i] = Math.max(8, Math.min(100, scaled));
+            const avg = count > 0 ? sum / count : 0;
+            let scaled = (avg / 255) * 100 * range.gain;
+            scaled = Math.pow(Math.min(scaled / 100, 1), 1.2) * 100;
+            realValues[i] = Math.max(8, Math.min(100, scaled));
           }
+
+          // Interleave Real and Simulated Bands:
+          // Slot 0 (Real): Bajo
+          // Slot 1 (Sim): Armónico / Sub-Bajo derivado del Bajo Real
+          // Slot 2 (Real): Medio-Bajo
+          // Slot 3 (Sim): Resonancia derivado de Medio-Bajo e Intermedio
+          // Slot 4 (Real): Intermedio (Voz / Lead)
+          // Slot 5 (Sim): Excitación / Armónico de Intermedio
+          // Slot 6 (Real): Agudo
+          // Slot 7 (Sim): Aire / Brillo superior derivado de Agudo
+
+          targetBands[0] = realValues[0]; // Real Bajo
+          targetBands[1] = Math.max(8, Math.min(100, realValues[0] * 0.86 + kickEnvelope * 16)); // Simulado Sub-Armónico
+          targetBands[2] = realValues[1]; // Real Medio-Bajo
+          targetBands[3] = Math.max(8, Math.min(100, (realValues[1] * 0.55 + realValues[2] * 0.45) * 1.08)); // Simulado Resonancia
+          targetBands[4] = realValues[2]; // Real Intermedio
+          targetBands[5] = Math.max(8, Math.min(100, (realValues[2] * 0.6 + realValues[3] * 0.4) * 1.05 + Math.sin(time * 6) * 5)); // Simulado Presencia
+          targetBands[6] = realValues[3]; // Real Agudo
+          targetBands[7] = Math.max(8, Math.min(100, realValues[3] * 0.82 + hihatEnvelope * 18)); // Simulado Aire
 
           // Dominant region detection (throttled DOM update every 400ms)
           if (timestamp - lastRegionUpdateRef.current > 400 && regionBadgeRef.current) {
@@ -169,29 +195,21 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
         }
       }
 
-      // Smooth rhythmic fallback if stream is buffering or CORS restricted
+      // Smooth rhythmic fallback if stream is buffering or cross-origin restricted
       if (!realDataAvailable) {
-        const time = beatClockRef.current;
-        const bpm = 124;
-        const beatPeriod = 60 / bpm;
-        const beatPhase = (time % beatPeriod) / beatPeriod;
         const measurePhase = (time % (beatPeriod * 4)) / (beatPeriod * 4);
-
-        const kickEnvelope = Math.max(0, Math.exp(-beatPhase * 7));
         const isSnareBeat = (measurePhase >= 0.25 && measurePhase < 0.5) || (measurePhase >= 0.75);
         const snareEnvelope = isSnareBeat ? Math.max(0, Math.exp(-beatPhase * 6)) : 0;
-        const hihatPhase = (time % (beatPeriod / 4)) / (beatPeriod / 4);
-        const hihatEnvelope = Math.max(0, Math.exp(-hihatPhase * 10));
         const bassMelody = 0.5 + 0.5 * Math.sin(time * 3.5 + Math.sin(time * 2));
 
-        targetBands[0] = Math.max(10, Math.min(100, 18 + kickEnvelope * 78 + bassMelody * 20));
-        targetBands[1] = Math.max(10, Math.min(100, 16 + kickEnvelope * 65 + bassMelody * 30));
-        targetBands[2] = Math.max(10, Math.min(100, 20 + snareEnvelope * 55 + Math.sin(time * 4) * 20));
-        targetBands[3] = Math.max(10, Math.min(100, 22 + snareEnvelope * 65 + Math.cos(time * 5) * 25));
-        targetBands[4] = Math.max(10, Math.min(100, 18 + snareEnvelope * 50 + Math.sin(time * 6) * 25));
-        targetBands[5] = Math.max(10, Math.min(100, 15 + hihatEnvelope * 65 + Math.cos(time * 7) * 20));
-        targetBands[6] = Math.max(10, Math.min(100, 16 + hihatEnvelope * 75 + Math.sin(time * 8) * 18));
-        targetBands[7] = Math.max(8, Math.min(100, 12 + hihatEnvelope * 60 + Math.cos(time * 9) * 15));
+        targetBands[0] = Math.max(10, Math.min(100, 20 + kickEnvelope * 75 + bassMelody * 20)); // Real Bajo
+        targetBands[1] = Math.max(10, Math.min(100, 18 + kickEnvelope * 65 + bassMelody * 25)); // Simulado Sub
+        targetBands[2] = Math.max(10, Math.min(100, 22 + snareEnvelope * 55 + Math.sin(time * 4) * 18)); // Real Medio-Bajo
+        targetBands[3] = Math.max(10, Math.min(100, 24 + snareEnvelope * 62 + Math.cos(time * 5) * 20)); // Simulado Resonancia
+        targetBands[4] = Math.max(10, Math.min(100, 20 + snareEnvelope * 50 + Math.sin(time * 6) * 22)); // Real Intermedio
+        targetBands[5] = Math.max(10, Math.min(100, 18 + hihatEnvelope * 60 + Math.cos(time * 7) * 18)); // Simulado Presencia
+        targetBands[6] = Math.max(10, Math.min(100, 16 + hihatEnvelope * 72 + Math.sin(time * 8) * 16)); // Real Agudo
+        targetBands[7] = Math.max(8, Math.min(100, 12 + hihatEnvelope * 58 + Math.cos(time * 9) * 14)); // Simulado Aire
       }
 
       // Ballistics smoothing

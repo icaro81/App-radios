@@ -4,6 +4,7 @@
     <!-- Hardware features for TV, Auto and Mobile compatibility -->
     <uses-feature android:name="android.software.leanback" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
+    <uses-feature android:name="android.hardware.type.automotive" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -14,12 +15,21 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
 
+        <!-- Android Auto Integration -->
+        <meta-data
+            android:name="com.google.android.gms.car.application"
+            android:resource="@xml/automotive_app_desc" />
+        <meta-data
+            android:name="androidx.car.app.minCarApiLevel"
+            android:value="1" />
+
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
+            android:keepScreenOn="true"
             android:exported="true">
 
             <intent-filter>
@@ -27,6 +37,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
                 <!-- Android TV / Google TV Launcher Category -->
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+                <!-- Android Auto Media Selector Category -->
+                <category android:name="androidx.car.app.category.MEDIA" />
             </intent-filter>
 
         </activity>

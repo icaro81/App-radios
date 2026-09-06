@@ -5,6 +5,7 @@ import { StationGrid } from './components/StationGrid';
 import { Visualizer } from './components/Visualizer';
 import { AddStationModal } from './components/AddStationModal';
 import { UpdateModal } from './components/UpdateModal';
+import { EqualizerModal, EqualizerBands, DEFAULT_EQ_BANDS } from './components/EqualizerModal';
 import { AndroidTVView } from './components/AndroidTVView';
 import { checkAppUpdate, UpdateInfo } from './services/updateChecker';
 import { APP_VERSION } from './version';
@@ -17,7 +18,8 @@ import {
   VolumeX, 
   RotateCw, 
   AlertCircle,
-  Sparkles
+  Sparkles,
+  SlidersHorizontal
 } from 'lucide-react';
 
 export default function App() {
@@ -50,14 +52,152 @@ export default function App() {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState<boolean>(false);
   const [isCheckingUpdate, setIsCheckingUpdate] = useState<boolean>(false);
 
+  // Equalizer state & persistence
+  const [eqBands, setEqBands] = useState<EqualizerBands>(() => {
+    try {
+      const saved = localStorage.getItem('radio_cristal_eq');
+      if (saved) {
+        return JSON.parse(saved);
+      }
+    } catch {}
+    return DEFAULT_EQ_BANDS;
+  });
+  const [isEqOpen, setIsEqOpen] = useState<boolean>(false);
+
   // Audio elements & Web Audio Context
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioCtxRef = useRef<AudioContext | null>(null);
   const sourceNodeRef = useRef<MediaElementAudioSourceNode | null>(null);
+  const playPromiseRef = useRef<Promise<void> | null>(null);
+
+  // 4 Biquad Filter Nodes for Equalizer: Bajo, Medio, Intermedio, Agudo
+  const bassFilterRef = useRef<BiquadFilterNode | null>(null);
+  const midFilterRef = useRef<BiquadFilterNode | null>(null);
+  const intermediateFilterRef = useRef<BiquadFilterNode | null>(null);
+  const trebleFilterRef = useRef<BiquadFilterNode | null>(null);
+
+  // Screen WakeLock for TV screensaver blocking and continuous background playback
+  const wakeLockRef = useRef<WakeLockSentinel | null>(null);
 
   // Reconnection tracking
   const reconnectAttempts = useRef<number>(0);
   const reconnectTimer = useRef<number | null>(null);
+
+  // Screen WakeLock request/release
+  const requestWakeLock = useCallback(async () => {
+    try {
+      if ('wakeLock' in navigator && !wakeLockRef.current) {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+        wakeLockRef.current.addEventListener('release', () => {
+          wakeLockRef.current = null;
+        });
+      }
+    } catch {
+      // Ignored if unsupported or disallowed
+    }
+  }, []);
+
+  const releaseWakeLock = useCallback(async () => {
+    if (wakeLockRef.current) {
+      try {
+        await wakeLockRef.current.release();
+      } catch {}
+      wakeLockRef.current = null;
+    }
+  }, []);
+
+  // Equalizer handlers
+  const handleEqChangeBand = (band: keyof EqualizerBands, value: number) => {
+    setEqBands((prev) => ({ ...prev, [band]: value }));
+  };
+
+  const handleEqReset = () => {
+    setEqBands(DEFAULT_EQ_BANDS);
+  };
+
+  const handleEqPreset = (preset: EqualizerBands) => {
+    setEqBands(preset);
+  };
+
+  // Sync EQ gains with Web Audio filter nodes in real-time
+  useEffect(() => {
+    if (bassFilterRef.current) bassFilterRef.current.gain.value = eqBands.bass;
+    if (midFilterRef.current) midFilterRef.current.gain.value = eqBands.mid;
+    if (intermediateFilterRef.current) intermediateFilterRef.current.gain.value = eqBands.intermediate;
+    if (trebleFilterRef.current) trebleFilterRef.current.gain.value = eqBands.treble;
+    try {
+      localStorage.setItem('radio_cristal_eq', JSON.stringify(eqBands));
+    } catch {}
+  }, [eqBands]);
+
+  // Audio Context initialization on first user interaction with full 4-band EQ chain
+  const initAudioGraph = useCallback(() => {
+    if (!audioRef.current) return;
+
+    if (!audioCtxRef.current) {
+      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
+      if (AudioCtxClass) {
+        const ctx = new AudioCtxClass();
+
+        // Band 1: Bass / Bajo (Lowshelf @ 100 Hz)
+        const bassNode = ctx.createBiquadFilter();
+        bassNode.type = 'lowshelf';
+        bassNode.frequency.value = 100;
+        bassNode.gain.value = eqBands.bass;
+
+        // Band 2: Mid / Medio (Peaking @ 500 Hz)
+        const midNode = ctx.createBiquadFilter();
+        midNode.type = 'peaking';
+        midNode.frequency.value = 500;
+        midNode.Q.value = 1.0;
+        midNode.gain.value = eqBands.mid;
+
+        // Band 3: Intermediate / Intermedio (Peaking @ 2500 Hz)
+        const intermediateNode = ctx.createBiquadFilter();
+        intermediateNode.type = 'peaking';
+        intermediateNode.frequency.value = 2500;
+        intermediateNode.Q.value = 1.0;
+        intermediateNode.gain.value = eqBands.intermediate;
+
+        // Band 4: Treble / Agudo (Highshelf @ 8000 Hz)
+        const trebleNode = ctx.createBiquadFilter();
+        trebleNode.type = 'highshelf';
+        trebleNode.frequency.value = 8000;
+        trebleNode.gain.value = eqBands.treble;
+
+        bassFilterRef.current = bassNode;
+        midFilterRef.current = midNode;
+        intermediateFilterRef.current = intermediateNode;
+        trebleFilterRef.current = trebleNode;
+
+        const node = ctx.createAnalyser();
+        node.fftSize = 128; // High frequency resolution
+        node.smoothingTimeConstant = 0.8;
+
+        try {
+          const source = ctx.createMediaElementSource(audioRef.current);
+          
+          // Connect linear filter chain: source -> bass -> mid -> intermediate -> treble -> visualizer -> speakers
+          source.connect(bassNode);
+          bassNode.connect(midNode);
+          midNode.connect(intermediateNode);
+          intermediateNode.connect(trebleNode);
+          trebleNode.connect(node);
+          node.connect(ctx.destination);
+
+          sourceNodeRef.current = source;
+          audioCtxRef.current = ctx;
+          setAnalyser(node);
+        } catch {
+          // If cross-origin or already connected, fallback smoothly
+        }
+      }
+    }
+
+    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+      audioCtxRef.current.resume();
+    }
+  }, [eqBands]);
 
   // Check for updates on mount and periodically
   const performUpdateCheck = useCallback(async (isManual: boolean = false) => {
@@ -96,36 +236,26 @@ export default function App() {
     };
   }, [performUpdateCheck]);
 
-  // Audio Context initialization on first user interaction
-  const initAudioGraph = useCallback(() => {
-    if (!audioRef.current) return;
+  // WakeLock effects to block screen saver / ambient mode and maintain background streaming
+  useEffect(() => {
+    if (playerStatus === 'playing') {
+      requestWakeLock();
+    } else {
+      releaseWakeLock();
+    }
+  }, [playerStatus, requestWakeLock, releaseWakeLock]);
 
-    if (!audioCtxRef.current) {
-      const AudioCtxClass = window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext;
-      if (AudioCtxClass) {
-        const ctx = new AudioCtxClass();
-        const node = ctx.createAnalyser();
-        node.fftSize = 64;
-        node.smoothingTimeConstant = 0.8;
-
-        try {
-          const source = ctx.createMediaElementSource(audioRef.current);
-          source.connect(node);
-          node.connect(ctx.destination);
-
-          sourceNodeRef.current = source;
-          audioCtxRef.current = ctx;
-          setAnalyser(node);
-        } catch {
-          // If already connected or cross-origin fails, visualizer falls back to CSS pulse
-        }
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && playerStatus === 'playing') {
+        requestWakeLock();
       }
-    }
-
-    if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
-      audioCtxRef.current.resume();
-    }
-  }, []);
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [playerStatus, requestWakeLock]);
 
   // Update volume and mute
   useEffect(() => {
@@ -140,17 +270,41 @@ export default function App() {
     initAudioGraph();
 
     if (playerStatus === 'playing') {
-      audioRef.current.pause();
+      if (playPromiseRef.current) {
+        try {
+          await playPromiseRef.current;
+        } catch {
+          // Ignore interruption
+        }
+      }
+      try {
+        audioRef.current.pause();
+      } catch {
+        // Ignore
+      }
       setPlayerStatus('idle');
     } else {
       try {
         setPlayerStatus('loading');
         setErrorMessage(null);
-        await audioRef.current.play();
+        const promise = audioRef.current.play();
+        playPromiseRef.current = promise;
+        await promise;
+        setPlayerStatus('playing');
       } catch (err: unknown) {
+        if (err instanceof DOMException && (err.name === 'AbortError' || err.code === DOMException.ABORT_ERR)) {
+          // Play request was interrupted by pause() or station switch, gracefully exit
+          return;
+        }
+        if (err instanceof DOMException && err.name === 'NotAllowedError') {
+          setPlayerStatus('idle');
+          return;
+        }
         setPlayerStatus('error');
         setErrorMessage('Error al reproducir el flujo de audio. Reintentando...');
         console.error('Play error:', err);
+      } finally {
+        playPromiseRef.current = null;
       }
     }
   }, [playerStatus, initAudioGraph]);
@@ -184,7 +338,7 @@ export default function App() {
   });
 
   // Switch Station
-  const playStation = useCallback((station: RadioStation) => {
+  const playStation = useCallback(async (station: RadioStation) => {
     if (!audioRef.current) return;
     initAudioGraph();
 
@@ -198,21 +352,45 @@ export default function App() {
     setPlayerStatus('loading');
     setErrorMessage(null);
 
-    // Stop current stream and load new URL
-    audioRef.current.pause();
+    // If a play request is already pending, wait for it before changing stream or pausing
+    if (playPromiseRef.current) {
+      try {
+        await playPromiseRef.current;
+      } catch {
+        // Ignore previous abort
+      }
+    }
+
+    try {
+      audioRef.current.pause();
+    } catch {
+      // Ignore
+    }
+
     audioRef.current.src = station.streamUrl;
     audioRef.current.load();
 
-    audioRef.current
-      .play()
-      .then(() => {
-        setPlayerStatus('playing');
-      })
-      .catch((err) => {
-        console.error('Auto-play blocked or failed:', err);
-        setPlayerStatus('error');
-        setErrorMessage('La señal no responde. Reintentando en breve...');
-      });
+    try {
+      const promise = audioRef.current.play();
+      playPromiseRef.current = promise;
+      await promise;
+      setPlayerStatus('playing');
+      setErrorMessage(null);
+    } catch (err: unknown) {
+      if (err instanceof DOMException && (err.name === 'AbortError' || err.code === DOMException.ABORT_ERR)) {
+        // Handled cleanly: play was aborted by subsequent pause or station selection
+        return;
+      }
+      if (err instanceof DOMException && err.name === 'NotAllowedError') {
+        setPlayerStatus('idle');
+        return;
+      }
+      console.error('Playback error:', err);
+      setPlayerStatus('error');
+      setErrorMessage('La señal no responde. Reintentando en breve...');
+    } finally {
+      playPromiseRef.current = null;
+    }
   }, [initAudioGraph]);
 
   // Remove Custom Station
@@ -257,6 +435,15 @@ export default function App() {
     };
 
     const handleError = () => {
+      const mediaError = audio.error;
+      // Aborted by user action/pause/switch, ignore
+      if (mediaError && mediaError.code === 1) {
+        return;
+      }
+      if (!audio.src) {
+        return;
+      }
+
       setPlayerStatus('error');
       
       // Auto-reconnect with exponential backoff (max 4 attempts)
@@ -265,11 +452,23 @@ export default function App() {
         const delay = reconnectAttempts.current * 2000;
         setErrorMessage(`Reconectando señal en ${delay / 1000}s (intento ${reconnectAttempts.current}/4)...`);
 
-        reconnectTimer.current = window.setTimeout(() => {
+        reconnectTimer.current = window.setTimeout(async () => {
           if (audioRef.current) {
-            audioRef.current.src = currentStation.streamUrl;
-            audioRef.current.load();
-            audioRef.current.play().catch(() => {});
+            try {
+              audioRef.current.src = currentStation.streamUrl;
+              audioRef.current.load();
+              const promise = audioRef.current.play();
+              playPromiseRef.current = promise;
+              await promise;
+              setPlayerStatus('playing');
+              setErrorMessage(null);
+            } catch (err: unknown) {
+              if (err instanceof DOMException && (err.name === 'AbortError' || err.code === DOMException.ABORT_ERR)) {
+                return;
+              }
+            } finally {
+              playPromiseRef.current = null;
+            }
           }
         }, delay);
       } else {
@@ -277,13 +476,19 @@ export default function App() {
       }
     };
 
+    const handlePause = () => {
+      setPlayerStatus((prev) => (prev === 'playing' ? 'idle' : prev));
+    };
+
     audio.addEventListener('playing', handlePlaying);
     audio.addEventListener('waiting', handleWaiting);
+    audio.addEventListener('pause', handlePause);
     audio.addEventListener('error', handleError);
 
     return () => {
       audio.removeEventListener('playing', handlePlaying);
       audio.removeEventListener('waiting', handleWaiting);
+      audio.removeEventListener('pause', handlePause);
       audio.removeEventListener('error', handleError);
       if (reconnectTimer.current) {
         clearTimeout(reconnectTimer.current);
@@ -379,6 +584,7 @@ export default function App() {
       });
     },
     onOpenAddModal: () => setIsAddModalOpen(true),
+    onOpenEqualizer: () => setIsEqOpen(true),
     stations,
     isTVMode: activeMode === 'tv',
   });
@@ -424,6 +630,7 @@ export default function App() {
               if (isMuted) setIsMuted(false);
             }}
             onCheckUpdate={() => performUpdateCheck(true)}
+            onOpenEqualizer={() => setIsEqOpen(true)}
             isCheckingUpdate={isCheckingUpdate}
             isLandscape={isLandscape}
           />
@@ -459,8 +666,19 @@ export default function App() {
                   </span>
                 </div>
 
-                <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400">
-                  {currentStation.badge || 'ESTÉREO HD'}
+                <div className="flex items-center gap-2">
+                  <button
+                    id="mobile-eq-btn"
+                    onClick={() => setIsEqOpen(true)}
+                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-all cursor-pointer active:scale-95"
+                    title="Abrir ecualizador de 4 bandas"
+                  >
+                    <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                    <span>EQ 4-BANDAS</span>
+                  </button>
+                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400">
+                    {currentStation.badge || 'ESTÉREO HD'}
+                  </div>
                 </div>
               </div>
 
@@ -606,6 +824,15 @@ export default function App() {
               <span>Radio Cristal HD v{APP_VERSION}</span>
               <div className="flex items-center gap-3">
                 <button
+                  id="footer-eq-btn"
+                  onClick={() => setIsEqOpen(true)}
+                  className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  title="Ecualizador de audio de 4 bandas"
+                >
+                  <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                  <span>Ecualizador</span>
+                </button>
+                <button
                   id="check-updates-btn"
                   onClick={() => performUpdateCheck(true)}
                   className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
@@ -619,6 +846,16 @@ export default function App() {
           </section>
         </div>
       )}
+
+      {/* 4-Band Audio Equalizer Modal */}
+      <EqualizerModal
+        isOpen={isEqOpen}
+        onClose={() => setIsEqOpen(false)}
+        bands={eqBands}
+        onChangeBand={handleEqChangeBand}
+        onReset={handleEqReset}
+        onApplyPreset={handleEqPreset}
+      />
 
       {/* Add Custom Station Modal */}
       <AddStationModal
