@@ -76,14 +76,15 @@ jobs:
           cd android
           ./gradlew assembleDebug --no-daemon
           cd ..
-          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Radio-Cristal.apk
-          ls -lh android/app/build/outputs/apk/debug/Radio-Cristal.apk
+          APK_NAME="Radio-Cristal-v1.0.${{ github.run_number }}.apk"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/$APK_NAME"
+          ls -lh "android/app/build/outputs/apk/debug/$APK_NAME"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Radio-Cristal-v1.0.${{ github.run_number }}
-          path: android/app/build/outputs/apk/debug/Radio-Cristal.apk
+          path: android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
 
       - name: Create or Update GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -94,8 +95,8 @@ jobs:
           body: |
             ### Actualización de Radio Cristal HD (Build ${{ github.run_number }})
             - Esta versión se instala **directamente encima** de la versión previa en tu celular sin necesidad de desinstalar.
-            - Descarga el archivo `Radio-Cristal.apk` adjunto para actualizar de inmediato.
-          files: android/app/build/outputs/apk/debug/Radio-Cristal.apk
+            - Descarga el archivo `Radio-Cristal-v1.0.${{ github.run_number }}.apk` adjunto para actualizar de inmediato.
+          files: android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
           draft: false
           prerelease: false
         env:
