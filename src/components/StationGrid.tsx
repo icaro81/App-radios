@@ -145,9 +145,9 @@ export const StationGrid: React.FC<StationGridProps> = ({
                     <button
                       id={`station-compact-${station.id}`}
                       onClick={() => onSelectStation(station)}
-                      className={`relative w-full h-[68px] sm:h-[72px] text-left rounded-2xl p-2.5 sm:p-3 transition-all duration-300 ease-out overflow-hidden select-none cursor-pointer flex items-center gap-2.5 ${
+                      className={`relative w-full h-[56px] sm:h-[62px] text-left rounded-xl sm:rounded-2xl p-2 sm:p-2.5 transition-all duration-200 ease-out overflow-hidden select-none cursor-pointer flex items-center gap-2 sm:gap-2.5 ${
                         isActive
-                          ? 'glass-button-active border border-white/35 text-white shadow-[0_0_20px_rgba(255,255,255,0.18)]'
+                          ? 'glass-button-active border border-white/35 text-white shadow-[0_0_15px_rgba(255,255,255,0.18)]'
                           : 'glass-button border border-white/10 text-neutral-300 hover:text-white hover:border-white/20'
                       }`}
                     >
@@ -159,18 +159,18 @@ export const StationGrid: React.FC<StationGridProps> = ({
 
                       {/* Icon Container */}
                       <div
-                        className={`flex-shrink-0 w-9 h-9 rounded-xl flex items-center justify-center transition-all ${
+                        className={`flex-shrink-0 w-8 h-8 rounded-lg sm:rounded-xl flex items-center justify-center transition-all ${
                           isActive
-                            ? 'bg-white text-black shadow-[0_0_12px_rgba(255,255,255,0.4)]'
+                            ? 'bg-white text-black shadow-[0_0_10px_rgba(255,255,255,0.4)]'
                             : 'bg-white/5 text-neutral-400 group-hover/card:bg-white/10 group-hover/card:text-white border border-white/5'
                         }`}
                       >
                         {isLoadingThis ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
                         ) : isPlayingThis ? (
-                          <Signal className="w-4 h-4 animate-pulse" />
+                          <Signal className="w-3.5 h-3.5 animate-pulse" />
                         ) : (
-                          <Radio className="w-4 h-4" />
+                          <Radio className="w-3.5 h-3.5" />
                         )}
                       </div>
 
@@ -216,11 +216,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
                 <button
                   key={slot.id}
                   onClick={onOpenAddModal}
-                  className="relative w-full h-[68px] sm:h-[72px] rounded-2xl border border-dashed border-white/20 hover:border-emerald-400/50 bg-white/[0.02] hover:bg-white/[0.06] transition-all duration-300 p-2.5 flex items-center justify-center gap-2 cursor-pointer group/add select-none"
+                  className="relative w-full h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border border-dashed border-white/20 hover:border-emerald-400/50 bg-white/[0.02] hover:bg-white/[0.06] transition-all duration-200 p-2 sm:p-2.5 flex items-center justify-center gap-2 cursor-pointer group/add select-none"
                   title="Agregar nueva transmisión"
                 >
-                  <div className="w-8 h-8 rounded-xl bg-white/5 border border-white/10 group-hover/add:border-emerald-400/40 group-hover/add:bg-emerald-500/10 flex items-center justify-center text-neutral-400 group-hover/add:text-emerald-400 transition-colors">
-                    <Plus className="w-4 h-4" />
+                  <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 group-hover/add:border-emerald-400/40 group-hover/add:bg-emerald-500/10 flex items-center justify-center text-neutral-400 group-hover/add:text-emerald-400 transition-colors">
+                    <Plus className="w-3.5 h-3.5" />
                   </div>
                   <div className="text-left min-w-0">
                     <span className="block text-xs font-medium text-neutral-300 group-hover/add:text-white truncate">

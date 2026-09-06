@@ -160,12 +160,31 @@ export function useTVNavigation({
             if (current === 'prev-station') return 'play-pause';
             if (current === 'play-pause') return 'next-station';
             if (current === 'next-station') return 'mute';
+            if (current === 'mute' && stations.length > 0) return `station-${stations[0].id}`;
             if (isControlBtn && stations.length > 0) return `station-${stations[0].id}`;
+            if (isStationItem) {
+              const currentId = current.replace('station-', '');
+              const currentIndex = stations.findIndex((s) => s.id === currentId);
+              if (currentIndex >= 0 && currentIndex < stations.length - 1) {
+                return `station-${stations[currentIndex + 1].id}`;
+              }
+              return 'add-station';
+            }
             return current;
           }
 
           if (isLeft) {
-            if (isStationItem || isAddBtn) return 'play-pause';
+            if (isStationItem) {
+              const currentId = current.replace('station-', '');
+              const currentIndex = stations.findIndex((s) => s.id === currentId);
+              if (currentIndex > 0) {
+                return `station-${stations[currentIndex - 1].id}`;
+              }
+              return 'play-pause';
+            }
+            if (isAddBtn) {
+              return stations.length > 0 ? `station-${stations[stations.length - 1].id}` : 'play-pause';
+            }
             if (current === 'mute') return 'next-station';
             if (current === 'next-station') return 'play-pause';
             if (current === 'play-pause') return 'prev-station';
@@ -173,8 +192,11 @@ export function useTVNavigation({
           }
 
           if (isDown) {
-            if (isControlBtn) {
-              return 'play-pause';
+            if (current === 'prev-station' || current === 'play-pause' || current === 'next-station') {
+              return 'mute';
+            }
+            if (current === 'mute') {
+              return stations.length > 0 ? `station-${stations[0].id}` : current;
             }
             if (isStationItem) {
               const currentId = current.replace('station-', '');
@@ -188,6 +210,9 @@ export function useTVNavigation({
           }
 
           if (isUp) {
+            if (current === 'mute') {
+              return 'play-pause';
+            }
             if (isAddBtn && stations.length > 0) {
               return `station-${stations[stations.length - 1].id}`;
             }
@@ -197,7 +222,7 @@ export function useTVNavigation({
               if (currentIndex > 0) {
                 return `station-${stations[currentIndex - 1].id}`;
               }
-              return `station-${stations[0].id}`;
+              return 'play-pause';
             }
             return current;
           }

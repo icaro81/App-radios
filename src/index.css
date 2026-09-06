@@ -1,5 +1,13 @@
 @import "tailwindcss";
 
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  overscroll-behavior: none;
+}
+
 @layer utilities {
   .glass-surface {
     background: radial-gradient(120% 120% at 50% 0%, rgba(35, 35, 45, 0.6) 0%, rgba(10, 10, 14, 0.85) 60%, rgba(4, 4, 6, 0.95) 100%);
