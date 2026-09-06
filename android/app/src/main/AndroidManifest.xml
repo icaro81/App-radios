@@ -15,13 +15,10 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/AppTheme">
 
-        <!-- Android Auto Integration -->
+        <!-- Android Auto / Automotive Media Indicator -->
         <meta-data
             android:name="com.google.android.gms.car.application"
             android:resource="@xml/automotive_app_desc" />
-        <meta-data
-            android:name="androidx.car.app.minCarApiLevel"
-            android:value="1" />
 
         <activity
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
@@ -29,7 +26,6 @@
             android:label="@string/title_activity_main"
             android:theme="@style/AppTheme.NoActionBarLaunch"
             android:launchMode="singleTask"
-            android:keepScreenOn="true"
             android:exported="true">
 
             <intent-filter>
@@ -37,8 +33,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
                 <!-- Android TV / Google TV Launcher Category -->
                 <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
-                <!-- Android Auto Media Selector Category -->
-                <category android:name="androidx.car.app.category.MEDIA" />
             </intent-filter>
 
         </activity>
