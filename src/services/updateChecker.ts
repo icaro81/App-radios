@@ -8,6 +8,7 @@ export interface UpdateInfo {
   releaseNotes?: string;
   downloadUrl?: string;
   publishedAt?: string;
+  repoNotFound?: boolean;
 }
 
 // Compare semantic versions (e.g. '1.0.5' vs '1.0.4' or 'v1.0.12' vs 'v1.0.4')
@@ -29,7 +30,13 @@ export function isVersionGreater(remote: string, local: string): boolean {
 }
 
 export async function checkAppUpdate(customRepo?: string): Promise<UpdateInfo | null> {
-  const repo = customRepo || localStorage.getItem('radio_cristal_github_repo') || DEFAULT_REPO;
+  let repo = customRepo || localStorage.getItem('radio_cristal_github_repo') || DEFAULT_REPO;
+  if (repo === 'icarojose81/RadioCristal') {
+    repo = DEFAULT_REPO;
+    localStorage.setItem('radio_cristal_github_repo', DEFAULT_REPO);
+  }
+
+  let repoNotFound = false;
 
   try {
     // 1. Try checking GitHub Releases API
@@ -64,7 +71,10 @@ export async function checkAppUpdate(customRepo?: string): Promise<UpdateInfo | 
         releaseNotes: release.body || 'Nuevas mejoras de estabilidad y funciones añadidas.',
         downloadUrl,
         publishedAt: release.published_at,
+        repoNotFound: false,
       };
+    } else if (response.status === 404) {
+      repoNotFound = true;
     }
   } catch (err) {
     console.warn('GitHub update check network error:', err);
@@ -83,11 +93,17 @@ export async function checkAppUpdate(customRepo?: string): Promise<UpdateInfo | 
         releaseTitle: data.title,
         releaseNotes: data.notes,
         downloadUrl: data.downloadUrl || undefined,
+        repoNotFound,
       };
     }
   } catch {
     // ignore
   }
 
-  return null;
+  return {
+    hasUpdate: false,
+    latestVersion: APP_VERSION,
+    currentVersion: APP_VERSION,
+    repoNotFound,
+  };
 }

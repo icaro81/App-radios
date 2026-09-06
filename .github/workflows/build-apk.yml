@@ -26,6 +26,16 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Synchronize Version with GitHub Run Number
+        run: |
+          NEW_VERSION="1.0.${{ github.run_number }}"
+          echo "Synchronizing version to $NEW_VERSION (build ${{ github.run_number }})"
+          sed -i "s/export const APP_VERSION = .*/export const APP_VERSION = '$NEW_VERSION';/" src/version.ts
+          sed -i "s/export const APP_BUILD_CODE = .*/export const APP_BUILD_CODE = ${{ github.run_number }};/" src/version.ts
+          sed -i "s/\"versionName\": .*/\"versionName\": \"$NEW_VERSION\",/" public/version.json
+          sed -i "s/\"versionCode\": .*/\"versionCode\": ${{ github.run_number }},/" public/version.json
+          cat src/version.ts
+
       - name: Build Web Application
         run: npm run build
 
@@ -65,12 +75,15 @@ jobs:
         run: |
           cd android
           ./gradlew assembleDebug --no-daemon
+          cd ..
+          cp android/app/build/outputs/apk/debug/app-debug.apk android/app/build/outputs/apk/debug/Radio-Cristal.apk
+          ls -lh android/app/build/outputs/apk/debug/Radio-Cristal.apk
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Radio-Cristal-HD-app-debug
-          path: android/app/build/outputs/apk/debug/app-debug.apk
+          name: Radio-Cristal-v1.0.${{ github.run_number }}
+          path: android/app/build/outputs/apk/debug/Radio-Cristal.apk
 
       - name: Create or Update GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -81,8 +94,8 @@ jobs:
           body: |
             ### Actualización de Radio Cristal HD (Build ${{ github.run_number }})
             - Esta versión se instala **directamente encima** de la versión previa en tu celular sin necesidad de desinstalar.
-            - Descarga el archivo `app-debug.apk` adjunto para actualizar de inmediato.
-          files: android/app/build/outputs/apk/debug/app-debug.apk
+            - Descarga el archivo `Radio-Cristal.apk` adjunto para actualizar de inmediato.
+          files: android/app/build/outputs/apk/debug/Radio-Cristal.apk
           draft: false
           prerelease: false
         env:

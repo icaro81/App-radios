@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UpdateInfo } from '../services/updateChecker';
-import { Download, X, Sparkles, CheckCircle2, RefreshCw, ExternalLink, Github } from 'lucide-react';
+import { DEFAULT_REPO } from '../version';
+import { Download, X, Sparkles, CheckCircle2, RefreshCw, Github, AlertTriangle } from 'lucide-react';
 
 interface UpdateModalProps {
   isOpen: boolean;
@@ -19,14 +20,20 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
 }) => {
   const [showRepoConfig, setShowRepoConfig] = useState<boolean>(false);
   const [repoInput, setRepoInput] = useState<string>(() => {
-    return localStorage.getItem('radio_cristal_github_repo') || 'icarojose81/RadioCristal';
+    const saved = localStorage.getItem('radio_cristal_github_repo');
+    if (saved && saved !== 'icarojose81/RadioCristal') {
+      return saved;
+    }
+    return DEFAULT_REPO;
   });
   const [repoSaved, setRepoSaved] = useState<boolean>(false);
 
   if (!isOpen) return null;
 
   const handleSaveRepo = () => {
-    localStorage.setItem('radio_cristal_github_repo', repoInput.trim());
+    const clean = repoInput.trim() || DEFAULT_REPO;
+    localStorage.setItem('radio_cristal_github_repo', clean);
+    setRepoInput(clean);
     setRepoSaved(true);
     setTimeout(() => setRepoSaved(false), 2000);
     onCheckAgain();
@@ -111,13 +118,29 @@ export const UpdateModal: React.FC<UpdateModalProps> = ({
             </div>
           </div>
         ) : (
-          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-center my-4">
+          <div className="p-4 rounded-2xl bg-white/[0.03] border border-white/10 text-center my-4 space-y-2">
             <p className="text-sm text-neutral-300">
               Estás disfrutando de la versión más reciente de <strong className="text-white">Radio Cristal HD</strong>.
             </p>
-            <p className="text-xs text-neutral-500 mt-1">
+            <p className="text-xs text-neutral-500">
               Versión instalada: v{updateInfo?.currentVersion || '1.0.4'}
             </p>
+
+            {updateInfo?.repoNotFound && (
+              <div className="mt-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-left text-xs text-amber-300/90 space-y-1">
+                <div className="flex items-center gap-1.5 font-semibold text-amber-200">
+                  <AlertTriangle className="w-4 h-4 text-amber-400 shrink-0" />
+                  <span>Repositorio Privado o no encontrado</span>
+                </div>
+                <p className="text-[11px] text-neutral-300 leading-relaxed">
+                  Si tu repositorio en GitHub es <strong>Privado</strong>, GitHub no permite que la app consulte las actualizaciones sin iniciar sesión.
+                </p>
+                <p className="text-[11px] text-neutral-400 leading-relaxed">
+                  Para habilitar actualizaciones automáticas, en GitHub ve a: <br/>
+                  <strong className="text-white">Settings → Danger Zone → Change visibility → Make public</strong>.
+                </p>
+              </div>
+            )}
           </div>
         )}
 
