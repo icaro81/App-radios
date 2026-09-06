@@ -365,7 +365,13 @@ export default function App() {
   const isLoading = playerStatus === 'loading';
 
   return (
-    <main className="relative min-h-screen w-full bg-[#050508] text-white flex flex-col justify-center items-center overflow-x-hidden p-3 sm:p-4 select-none font-sans">
+    <main
+      className={`relative w-full bg-[#050508] text-white flex flex-col justify-center items-center select-none font-sans ${
+        activeMode === 'tv'
+          ? 'h-screen max-h-screen overflow-hidden p-2 sm:p-3'
+          : 'min-h-screen overflow-x-hidden p-3 sm:p-4'
+      }`}
+    >
       {/* Background Radial Glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
         <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full blur-3xl" />
@@ -373,7 +379,7 @@ export default function App() {
 
       {activeMode === 'tv' ? (
         /* Android TV / Tablet Landscape View with D-Pad focus */
-        <div className="relative z-10 w-full">
+        <div className="relative z-10 w-full max-w-5xl xl:max-w-6xl h-full flex flex-col justify-center items-center">
           <AndroidTVView
             currentStation={currentStation}
             stations={stations}
@@ -382,10 +388,12 @@ export default function App() {
             isMuted={isMuted}
             focusedElement={focusedElement}
             analyser={analyser}
+            errorMessage={errorMessage}
             onPlayStation={playStation}
             onTogglePlayPause={togglePlayPause}
             onToggleMute={toggleMute}
-            onSwitchStation={nextStation}
+            onNextStation={nextStation}
+            onPreviousStation={prevStation}
             onSetFocus={setFocusedElement}
             onOpenAddModal={() => setIsAddModalOpen(true)}
             onRemoveCustomStation={handleRemoveStation}
@@ -394,6 +402,7 @@ export default function App() {
               if (isMuted) setIsMuted(false);
             }}
             onCheckUpdate={() => performUpdateCheck(true)}
+            isCheckingUpdate={isCheckingUpdate}
             onSwitchToMobile={() => {
               setPreferredMode('mobile');
               localStorage.setItem('radio_cristal_preferred_mode', 'mobile');
