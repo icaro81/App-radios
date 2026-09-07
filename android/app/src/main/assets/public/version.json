@@ -1,8 +1,8 @@
 {
-  "versionName": "1.0.22",
-  "versionCode": 22,
-  "releaseDate": "2026-09-05",
-  "title": "Radio Cristal HD v1.0.22",
-  "notes": "Corrección de pegado y guardado de enlaces de streaming en Android, botón rápido 'Pegar enlace', y sincronización automática de versión en compilación.",
+  "versionName": "1.0.23",
+  "versionCode": 23,
+  "releaseDate": "2026-09-06",
+  "title": "Radio Cristal HD v1.0.23",
+  "notes": "• Ecualizador paramétrico de 4 bandas (Bajo, Medio, Intermedio, Agudo) con perfiles rápidos.\n• Vúmetro de 8 bandas intercaladas (4 reales del analizador + 4 armónicas simuladas).\n• Compatibilidad con selector multimedia de Android Auto.\n• Bloqueo del protector de pantalla y reposo en Android TV.\n• Corrección de actualización en una sola instalación mediante purga de caché.\n• Botón de pegado directo de enlaces desde portapapeles con permisos nativos.\n• Audio garantizado en segundo plano y pantalla apagada.",
   "downloadUrl": ""
 }

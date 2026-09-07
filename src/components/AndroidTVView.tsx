@@ -228,16 +228,17 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
               </button>
             </div>
 
-            {/* Volume Slider & Mute */}
+            {/* Volume Slider & Mute & Equalizer Controls */}
             <div className="px-1">
-              <div className="flex items-center gap-3 bg-black/40 rounded-2xl p-2 sm:p-2.5 border border-white/5">
+              <div className="flex items-center gap-2 bg-black/40 rounded-2xl p-2 sm:p-2.5 border border-white/5">
+                {/* Mute Button */}
                 <button
                   id="tv-toggle-mute-btn"
                   onClick={onToggleMute}
                   onMouseEnter={() => onSetFocus('mute')}
-                  className={`p-1.5 rounded-xl cursor-pointer ${
+                  className={`p-1.5 rounded-xl cursor-pointer transition-all duration-75 ${
                     focusedElement === 'mute'
-                      ? 'ring-2 ring-white bg-white text-black'
+                      ? 'ring-2 ring-white bg-white text-black scale-110 shadow-lg'
                       : 'text-neutral-400 hover:text-white'
                   }`}
                   title={isMuted ? 'Activar sonido' : 'Silenciar'}
@@ -249,31 +250,70 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   )}
                 </button>
 
-                <input
-                  id="tv-volume-slider"
-                  type="range"
-                  min="0"
-                  max="1"
-                  step="0.01"
-                  value={isMuted ? 0 : volume}
-                  onChange={(e) => {
-                    onVolumeChange?.(parseFloat(e.target.value));
-                  }}
-                  className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white"
-                />
+                {/* Vol - Button */}
+                <button
+                  id="tv-volume-down-btn"
+                  onClick={() => onVolumeChange?.(Math.max(0, Number((volume - 0.05).toFixed(2))))}
+                  onMouseEnter={() => onSetFocus('vol-down')}
+                  className={`w-7 h-7 rounded-lg text-xs font-mono font-bold flex items-center justify-center transition-all duration-75 cursor-pointer ${
+                    focusedElement === 'vol-down'
+                      ? 'ring-2 ring-white bg-white text-black scale-110 shadow-lg'
+                      : 'bg-white/5 text-neutral-300 hover:text-white hover:bg-white/10'
+                  }`}
+                  title="Bajar volumen (-5%)"
+                >
+                  -
+                </button>
 
-                <span className="text-[10px] font-mono text-neutral-400 w-8 text-right">
-                  {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
-                </span>
+                {/* Volume Slider */}
+                <div className="flex-1 flex items-center gap-2">
+                  <input
+                    id="tv-volume-slider"
+                    type="range"
+                    min="0"
+                    max="1"
+                    step="0.01"
+                    value={isMuted ? 0 : volume}
+                    onChange={(e) => {
+                      onVolumeChange?.(parseFloat(e.target.value));
+                    }}
+                    className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                  />
+                  <span className="text-[10px] font-mono text-neutral-300 w-8 text-right font-semibold">
+                    {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
+                  </span>
+                </div>
 
+                {/* Vol + Button */}
+                <button
+                  id="tv-volume-up-btn"
+                  onClick={() => onVolumeChange?.(Math.min(1, Number((volume + 0.05).toFixed(2))))}
+                  onMouseEnter={() => onSetFocus('vol-up')}
+                  className={`w-7 h-7 rounded-lg text-xs font-mono font-bold flex items-center justify-center transition-all duration-75 cursor-pointer ${
+                    focusedElement === 'vol-up'
+                      ? 'ring-2 ring-white bg-white text-black scale-110 shadow-lg'
+                      : 'bg-white/5 text-neutral-300 hover:text-white hover:bg-white/10'
+                  }`}
+                  title="Subir volumen (+5%)"
+                >
+                  +
+                </button>
+
+                {/* EQ Quick Button */}
                 {onOpenEqualizer && (
                   <button
                     id="tv-eq-quick-btn"
                     onClick={onOpenEqualizer}
-                    className="p-1.5 rounded-xl cursor-pointer text-emerald-400 hover:text-emerald-300 hover:bg-white/10 transition-colors shrink-0"
+                    onMouseEnter={() => onSetFocus('eq-btn')}
+                    className={`p-1.5 px-2.5 rounded-xl cursor-pointer transition-all duration-75 flex items-center gap-1 shrink-0 ${
+                      focusedElement === 'eq-btn'
+                        ? 'border-2 border-emerald-400 ring-2 ring-emerald-400/80 bg-emerald-500/30 text-emerald-200 font-bold scale-110 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                        : 'glass-button border border-white/10 text-emerald-400 hover:text-emerald-300 hover:bg-white/10'
+                    }`}
                     title="Ecualizador de audio de 4 bandas"
                   >
-                    <SlidersHorizontal className="w-4 h-4" />
+                    <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
+                    <span className="text-[10px] font-mono font-bold">EQ</span>
                   </button>
                 )}
               </div>
@@ -407,8 +447,14 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
               <div className="flex items-center gap-3">
                 {onOpenEqualizer && (
                   <button
+                    id="tv-footer-eq-btn"
                     onClick={onOpenEqualizer}
-                    className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    onMouseEnter={() => onSetFocus('eq-btn')}
+                    className={`flex items-center gap-1.5 transition-all duration-75 cursor-pointer px-2.5 py-1 rounded-lg ${
+                      focusedElement === 'eq-btn'
+                        ? 'bg-emerald-500/30 text-emerald-200 ring-2 ring-emerald-400 border border-emerald-400 font-bold scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                        : 'text-neutral-400 hover:text-white border border-transparent'
+                    }`}
                     title="Ecualizador de audio"
                   >
                     <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
@@ -419,10 +465,15 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   <button
                     id="tv-check-updates-btn"
                     onClick={onCheckUpdate}
-                    className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                    onMouseEnter={() => onSetFocus('check-updates')}
+                    className={`flex items-center gap-1.5 transition-all duration-75 cursor-pointer px-2.5 py-1 rounded-lg ${
+                      focusedElement === 'check-updates'
+                        ? 'bg-white text-black ring-2 ring-white border border-white font-bold scale-105 shadow-lg'
+                        : 'text-neutral-400 hover:text-white border border-transparent'
+                    }`}
                     title="Buscar actualizaciones"
                   >
-                    <Sparkles className="w-3 h-3 text-emerald-400" />
+                    <Sparkles className={`w-3 h-3 ${focusedElement === 'check-updates' ? 'text-black' : 'text-emerald-400'}`} />
                     <span>{isCheckingUpdate ? 'Comprobando...' : 'Actualizar'}</span>
                   </button>
                 )}

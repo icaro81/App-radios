@@ -585,8 +585,10 @@ export default function App() {
     },
     onOpenAddModal: () => setIsAddModalOpen(true),
     onOpenEqualizer: () => setIsEqOpen(true),
+    onCheckUpdate: () => performUpdateCheck(true),
     stations,
     isTVMode: activeMode === 'tv',
+    isModalOpen: isEqOpen || isAddModalOpen || isUpdateModalOpen,
   });
 
   const isPlaying = playerStatus === 'playing';

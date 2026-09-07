@@ -1,1 +1,128 @@
-if(!self.define){let e,i={};const n=(n,c)=>(n=new URL(n+".js",c).href,i[n]||new Promise(i=>{if("document"in self){const e=document.createElement("script");e.src=n,e.onload=i,document.head.appendChild(e)}else e=n,importScripts(n),i()}).then(()=>{let e=i[n];if(!e)throw new Error(`Module ${n} didn’t register its module`);return e}));self.define=(c,r)=>{const s=e||("document"in self?document.currentScript.src:"")||location.href;if(i[s])return;let a={};const o=e=>n(e,s),b={module:{uri:s},exports:a,require:o};i[s]=Promise.all(c.map(e=>b[e]||o(e))).then(e=>(r(...e),a))}}define(["./workbox-9c191d2f"],function(e){"use strict";self.skipWaiting(),e.clientsClaim(),e.precacheAndRoute([{url:"registerSW.js",revision:"1872c500de691dce40960bb85481de07"},{url:"pwa-maskable-512x512.png",revision:"caa9ecabede2b7bf31364283cc4001b5"},{url:"pwa-512x512.png",revision:"caa9ecabede2b7bf31364283cc4001b5"},{url:"pwa-192x192.png",revision:"ec2733aef6cd53e7cf948c7cbf0b4929"},{url:"index.html",revision:"51a5b690b210b67924ef3a417b7660c9"},{url:"icon.svg",revision:"9274efea5befb172aaa83175b5125a99"},{url:"apple-touch-icon.png",revision:"5e7f488648651154b29c0661df5e57ea"},{url:"assets/index-C_l1LZGG.css",revision:null},{url:"assets/index-C56xvMtw.js",revision:null},{url:"apple-touch-icon.png",revision:"5e7f488648651154b29c0661df5e57ea"},{url:"icon.svg",revision:"9274efea5befb172aaa83175b5125a99"},{url:"pwa-192x192.png",revision:"ec2733aef6cd53e7cf948c7cbf0b4929"},{url:"pwa-512x512.png",revision:"caa9ecabede2b7bf31364283cc4001b5"},{url:"pwa-maskable-512x512.png",revision:"caa9ecabede2b7bf31364283cc4001b5"},{url:"manifest.webmanifest",revision:"6cfab61df2dd3c7d92e37c4fe8d49efa"}],{}),e.cleanupOutdatedCaches(),e.registerRoute(new e.NavigationRoute(e.createHandlerBoundToURL("index.html")))});
+/**
+ * Copyright 2018 Google Inc. All Rights Reserved.
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+// If the loader is already loaded, just stop.
+if (!self.define) {
+  let registry = {};
+
+  // Used for `eval` and `importScripts` where we can't get script URL by other means.
+  // In both cases, it's safe to use a global var because those functions are synchronous.
+  let nextDefineUri;
+
+  const singleRequire = (uri, parentUri) => {
+    uri = new URL(uri + ".js", parentUri).href;
+    return registry[uri] || (
+      
+        new Promise(resolve => {
+          if ("document" in self) {
+            const script = document.createElement("script");
+            script.src = uri;
+            script.onload = resolve;
+            document.head.appendChild(script);
+          } else {
+            nextDefineUri = uri;
+            importScripts(uri);
+            resolve();
+          }
+        })
+      
+      .then(() => {
+        let promise = registry[uri];
+        if (!promise) {
+          throw new Error(`Module ${uri} didn’t register its module`);
+        }
+        return promise;
+      })
+    );
+  };
+
+  self.define = (depsNames, factory) => {
+    const uri = nextDefineUri || ("document" in self ? document.currentScript.src : "") || location.href;
+    if (registry[uri]) {
+      // Module is already loading or loaded.
+      return;
+    }
+    let exports = {};
+    const require = depUri => singleRequire(depUri, uri);
+    const specialDeps = {
+      module: { uri },
+      exports,
+      require
+    };
+    registry[uri] = Promise.all(depsNames.map(
+      depName => specialDeps[depName] || require(depName)
+    )).then(deps => {
+      factory(...deps);
+      return exports;
+    });
+  };
+}
+define(['./workbox-7e5eb42b'], (function (workbox) { 'use strict';
+
+  self.skipWaiting();
+  workbox.clientsClaim();
+  /**
+   * The precacheAndRoute() method efficiently caches and responds to
+   * requests for URLs in the manifest.
+   * See https://goo.gl/S9QRab
+   */
+  workbox.precacheAndRoute([{
+    "url": "registerSW.js",
+    "revision": "1872c500de691dce40960bb85481de07"
+  }, {
+    "url": "pwa-maskable-512x512.png",
+    "revision": "caa9ecabede2b7bf31364283cc4001b5"
+  }, {
+    "url": "pwa-512x512.png",
+    "revision": "caa9ecabede2b7bf31364283cc4001b5"
+  }, {
+    "url": "pwa-192x192.png",
+    "revision": "ec2733aef6cd53e7cf948c7cbf0b4929"
+  }, {
+    "url": "index.html",
+    "revision": "98888668e11ef2ce7f334e6cd384ff7c"
+  }, {
+    "url": "icon.svg",
+    "revision": "9274efea5befb172aaa83175b5125a99"
+  }, {
+    "url": "apple-touch-icon.png",
+    "revision": "5e7f488648651154b29c0661df5e57ea"
+  }, {
+    "url": "assets/index-w7j5StQi.js",
+    "revision": null
+  }, {
+    "url": "assets/index-CzPqvZPu.css",
+    "revision": null
+  }, {
+    "url": "apple-touch-icon.png",
+    "revision": "5e7f488648651154b29c0661df5e57ea"
+  }, {
+    "url": "icon.svg",
+    "revision": "9274efea5befb172aaa83175b5125a99"
+  }, {
+    "url": "pwa-192x192.png",
+    "revision": "ec2733aef6cd53e7cf948c7cbf0b4929"
+  }, {
+    "url": "pwa-512x512.png",
+    "revision": "caa9ecabede2b7bf31364283cc4001b5"
+  }, {
+    "url": "pwa-maskable-512x512.png",
+    "revision": "caa9ecabede2b7bf31364283cc4001b5"
+  }, {
+    "url": "manifest.webmanifest",
+    "revision": "6cfab61df2dd3c7d92e37c4fe8d49efa"
+  }], {});
+  workbox.cleanupOutdatedCaches();
+  workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html")));
+
+}));

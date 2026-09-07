@@ -58,6 +58,13 @@ public class MainActivity extends BridgeActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+
+            // 4. Register In-App Updater for direct in-app APK download & installation without browser
+            try {
+                webView.addJavascriptInterface(new InAppUpdater(this, webView), "AndroidAppUpdater");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 

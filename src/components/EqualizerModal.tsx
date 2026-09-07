@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { SlidersHorizontal, X, RotateCcw, Volume2, Sparkles } from 'lucide-react';
 
 export interface EqualizerBands {
@@ -38,14 +39,114 @@ export const EqualizerModal = ({
   onReset,
   onApplyPreset,
 }: EqualizerModalProps) => {
-  if (!isOpen) return null;
+  const [focusedItem, setFocusedItem] = useState<string>('preset-0');
 
-  const bandConfigs: { key: keyof EqualizerBands; label: string; freq: string; desc: string; color: string }[] = [
-    { key: 'bass', label: 'Bajo', freq: '100 Hz', desc: 'Subgraves y pegada', color: 'from-emerald-500 to-emerald-400' },
-    { key: 'mid', label: 'Medio', freq: '500 Hz', desc: 'Cuerpo instrumental', color: 'from-cyan-500 to-cyan-400' },
-    { key: 'intermediate', label: 'Intermedio', freq: '2.5 kHz', desc: 'Presencia y voz', color: 'from-amber-500 to-amber-400' },
-    { key: 'treble', label: 'Agudo', freq: '8.0 kHz', desc: 'Brillo y definición', color: 'from-orange-500 to-rose-400' },
+  const bandConfigs: { key: keyof EqualizerBands; label: string; freq: string; desc: string }[] = [
+    { key: 'bass', label: 'Bajo', freq: '100 Hz', desc: 'Subgraves y pegada' },
+    { key: 'mid', label: 'Medio', freq: '500 Hz', desc: 'Cuerpo instrumental' },
+    { key: 'intermediate', label: 'Intermedio', freq: '2.5 kHz', desc: 'Presencia y voz' },
+    { key: 'treble', label: 'Agudo', freq: '8.0 kHz', desc: 'Brillo y definición' },
   ];
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
+    if (!isOpen) return;
+
+    const code = e.keyCode || e.which;
+
+    // Close on Escape or Android TV Back key (keyCode 4)
+    if (e.key === 'Escape' || code === 27 || code === 4) {
+      e.preventDefault();
+      onClose();
+      return;
+    }
+
+    const isUp = e.key === 'ArrowUp' || code === 19;
+    const isDown = e.key === 'ArrowDown' || code === 20;
+    const isLeft = e.key === 'ArrowLeft' || code === 21;
+    const isRight = e.key === 'ArrowRight' || code === 22;
+    const isEnter = e.key === 'Enter' || e.key === ' ' || code === 23 || code === 66;
+
+    if (isEnter) {
+      e.preventDefault();
+      if (focusedItem.startsWith('preset-')) {
+        const idx = parseInt(focusedItem.replace('preset-', ''), 10);
+        if (PRESETS[idx]) onApplyPreset(PRESETS[idx].bands);
+      } else if (focusedItem === 'eq-reset') {
+        onReset();
+      } else if (focusedItem === 'eq-done' || focusedItem === 'eq-close') {
+        onClose();
+      }
+      return;
+    }
+
+    if (isLeft || isRight) {
+      // If on a frequency band, adjust dB with Left/Right
+      if (focusedItem.startsWith('band-')) {
+        e.preventDefault();
+        const bandKey = focusedItem.replace('band-', '') as keyof EqualizerBands;
+        const currentVal = bands[bandKey] ?? 0;
+        const delta = isLeft ? -1 : 1;
+        const nextVal = Math.min(12, Math.max(-12, Number((currentVal + delta).toFixed(1))));
+        onChangeBand(bandKey, nextVal);
+        return;
+      }
+
+      // If on presets row, navigate horizontally
+      if (focusedItem.startsWith('preset-') || focusedItem === 'eq-reset') {
+        e.preventDefault();
+        setFocusedItem((cur) => {
+          if (isRight) {
+            if (cur === 'preset-0') return 'preset-1';
+            if (cur === 'preset-1') return 'preset-2';
+            if (cur === 'preset-2') return 'preset-3';
+            if (cur === 'preset-3') return 'eq-reset';
+            return cur;
+          } else {
+            if (cur === 'eq-reset') return 'preset-3';
+            if (cur === 'preset-3') return 'preset-2';
+            if (cur === 'preset-2') return 'preset-1';
+            if (cur === 'preset-1') return 'preset-0';
+            return cur;
+          }
+        });
+        return;
+      }
+    }
+
+    if (isDown) {
+      e.preventDefault();
+      setFocusedItem((cur) => {
+        if (cur.startsWith('preset-') || cur === 'eq-reset') return 'band-bass';
+        if (cur === 'band-bass') return 'band-mid';
+        if (cur === 'band-mid') return 'band-intermediate';
+        if (cur === 'band-intermediate') return 'band-treble';
+        if (cur === 'band-treble') return 'eq-done';
+        return cur;
+      });
+      return;
+    }
+
+    if (isUp) {
+      e.preventDefault();
+      setFocusedItem((cur) => {
+        if (cur === 'eq-done') return 'band-treble';
+        if (cur === 'band-treble') return 'band-intermediate';
+        if (cur === 'band-intermediate') return 'band-mid';
+        if (cur === 'band-mid') return 'band-bass';
+        if (cur === 'band-bass') return 'preset-0';
+        return cur;
+      });
+      return;
+    }
+  }, [isOpen, focusedItem, bands, onChangeBand, onApplyPreset, onReset, onClose]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, handleKeyDown]);
+
+  if (!isOpen) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 landscape:p-2 animate-in fade-in duration-200 overflow-hidden">
@@ -72,14 +173,19 @@ export const EqualizerModal = ({
                 </span>
               </div>
               <p className="text-[11px] text-neutral-400 hidden sm:block landscape:hidden md:landscape:block">
-                Ajuste fino de frecuencias en tiempo real
+                Ajuste fino de frecuencias • Control con mando [◄ ►] [▲ ▼]
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            onMouseEnter={() => setFocusedItem('eq-close')}
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+              focusedItem === 'eq-close'
+                ? 'bg-white text-black ring-2 ring-white scale-110'
+                : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'
+            }`}
             title="Cerrar"
           >
             <X className="w-4 h-4" />
@@ -97,7 +203,12 @@ export const EqualizerModal = ({
               </span>
               <button
                 onClick={onReset}
-                className="text-[10px] font-mono text-neutral-400 hover:text-white flex items-center gap-1 transition-colors cursor-pointer"
+                onMouseEnter={() => setFocusedItem('eq-reset')}
+                className={`text-[10px] font-mono flex items-center gap-1 transition-all cursor-pointer px-2 py-0.5 rounded-lg ${
+                  focusedItem === 'eq-reset'
+                    ? 'ring-2 ring-white bg-white text-black font-bold'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
                 title="Restablecer todas las bandas a 0 dB"
               >
                 <RotateCcw className="w-3 h-3" />
@@ -105,30 +216,45 @@ export const EqualizerModal = ({
               </button>
             </div>
             <div className="grid grid-cols-4 gap-1.5 sm:gap-2">
-              {PRESETS.map((p) => (
-                <button
-                  key={p.name}
-                  onClick={() => onApplyPreset(p.bands)}
-                  className="px-1.5 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-center transition-all active:scale-95 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1"
-                >
-                  <span className="text-xs">{p.icon}</span>
-                  <span className="text-[10px] font-semibold text-neutral-200 tracking-tight whitespace-nowrap">
-                    {p.name}
-                  </span>
-                </button>
-              ))}
+              {PRESETS.map((p, index) => {
+                const isFocused = focusedItem === `preset-${index}`;
+                return (
+                  <button
+                    key={p.name}
+                    onClick={() => onApplyPreset(p.bands)}
+                    onMouseEnter={() => setFocusedItem(`preset-${index}`)}
+                    className={`px-1.5 py-1.5 rounded-xl border text-center transition-all active:scale-95 cursor-pointer flex flex-col sm:flex-row items-center justify-center gap-1 ${
+                      isFocused
+                        ? 'border-emerald-400 ring-2 ring-emerald-400/80 bg-emerald-500/30 text-white font-bold scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
+                        : 'bg-white/5 hover:bg-white/10 border-white/10 text-neutral-200'
+                    }`}
+                  >
+                    <span className="text-xs">{p.icon}</span>
+                    <span className="text-[10px] font-semibold tracking-tight whitespace-nowrap">
+                      {p.name}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          {/* 4 Frequency Bands Sliders - 2 columns on landscape/tablets, 1 column on narrow portrait */}
+          {/* 4 Frequency Bands Sliders */}
           <div className="grid grid-cols-1 landscape:grid-cols-2 md:grid-cols-2 gap-2 sm:gap-2.5 pt-1">
             {bandConfigs.map(({ key, label, freq, desc }) => {
               const val = bands[key];
               const formattedVal = val > 0 ? `+${val.toFixed(1)} dB` : `${val.toFixed(1)} dB`;
+              const isFocused = focusedItem === `band-${key}`;
+
               return (
                 <div
                   key={key}
-                  className="p-2.5 sm:p-3 rounded-xl bg-black/40 border border-white/10 flex flex-col gap-1.5"
+                  onMouseEnter={() => setFocusedItem(`band-${key}`)}
+                  className={`p-2.5 sm:p-3 rounded-xl transition-all duration-75 flex flex-col gap-1.5 ${
+                    isFocused
+                      ? 'bg-emerald-950/30 border-2 border-emerald-400 ring-2 ring-emerald-400/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                      : 'bg-black/40 border border-white/10'
+                  }`}
                 >
                   <div className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1.5">
@@ -140,22 +266,35 @@ export const EqualizerModal = ({
                         ({desc})
                       </span>
                     </div>
-                    <span
-                      className={`font-mono text-xs font-bold ${
-                        val > 0
-                          ? 'text-emerald-400'
-                          : val < 0
-                          ? 'text-rose-400'
-                          : 'text-neutral-400'
-                      }`}
-                    >
-                      {formattedVal}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      {isFocused && (
+                        <span className="text-[9px] font-mono text-emerald-400/80 animate-pulse">
+                          ◄ ►
+                        </span>
+                      )}
+                      <span
+                        className={`font-mono text-xs font-bold ${
+                          val > 0
+                            ? 'text-emerald-400'
+                            : val < 0
+                            ? 'text-rose-400'
+                            : 'text-neutral-400'
+                        }`}
+                      >
+                        {formattedVal}
+                      </span>
+                    </div>
                   </div>
 
-                  {/* Range Slider */}
+                  {/* Range Slider & Remote Buttons */}
                   <div className="flex items-center gap-2">
-                    <span className="text-[8px] font-mono text-neutral-500 w-6 text-right">-12</span>
+                    <button
+                      onClick={() => onChangeBand(key, Math.max(-12, Number((val - 1).toFixed(1))))}
+                      className="w-5 h-5 rounded bg-white/5 hover:bg-white/15 text-neutral-400 hover:text-white text-[10px] font-mono flex items-center justify-center cursor-pointer"
+                      title="Bajar 1 dB"
+                    >
+                      -
+                    </button>
                     <input
                       type="range"
                       min={-12}
@@ -163,10 +302,16 @@ export const EqualizerModal = ({
                       step={0.5}
                       value={val}
                       onChange={(e) => onChangeBand(key, parseFloat(e.target.value))}
-                      className="flex-1 accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer transition-all focus:outline-none focus:ring-1 focus:ring-emerald-400/50"
+                      className="flex-1 accent-emerald-400 h-1.5 bg-neutral-800 rounded-lg cursor-pointer transition-all focus:outline-none"
                       aria-label={`${label} ${freq}`}
                     />
-                    <span className="text-[8px] font-mono text-neutral-500 w-6">+12</span>
+                    <button
+                      onClick={() => onChangeBand(key, Math.min(12, Number((val + 1).toFixed(1))))}
+                      className="w-5 h-5 rounded bg-white/5 hover:bg-white/15 text-neutral-400 hover:text-white text-[10px] font-mono flex items-center justify-center cursor-pointer"
+                      title="Subir 1 dB"
+                    >
+                      +
+                    </button>
                   </div>
                 </div>
               );
@@ -182,8 +327,14 @@ export const EqualizerModal = ({
           </div>
 
           <button
+            id="eq-done-btn"
             onClick={onClose}
-            className="px-4 py-1.5 rounded-xl bg-white text-black font-bold text-xs shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:bg-neutral-200 transition-all cursor-pointer"
+            onMouseEnter={() => setFocusedItem('eq-done')}
+            className={`px-5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+              focusedItem === 'eq-done'
+                ? 'bg-white text-black ring-4 ring-white/80 scale-110 shadow-[0_0_20px_rgba(255,255,255,0.6)]'
+                : 'bg-white text-black shadow-[0_0_15px_rgba(255,255,255,0.3)] hover:bg-neutral-200'
+            }`}
           >
             Listo
           </button>
