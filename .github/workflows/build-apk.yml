@@ -49,7 +49,11 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
         with:
-          cmdline-tools-version: 11076708
+          packages: 'platform-tools'
+
+      - name: Accept Android SDK Licenses
+        run: |
+          yes | sdkmanager --licenses 2>/dev/null || true
 
       - name: Sync Capacitor Android
         run: |
@@ -76,27 +80,33 @@ jobs:
           cd android
           ./gradlew assembleDebug --no-daemon
           cd ..
-          APK_NAME="Radio-Cristal-v1.0.${{ github.run_number }}.apk"
+          APK_NAME="Galena-Digital-v1.0.${{ github.run_number }}.apk"
+          LEGACY_NAME="Radio-Cristal-v1.0.${{ github.run_number }}.apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/$APK_NAME"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/$LEGACY_NAME"
           ls -lh "android/app/build/outputs/apk/debug/$APK_NAME"
 
       - name: Upload APK Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Radio-Cristal-v1.0.${{ github.run_number }}
-          path: android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
+          name: Galena-Digital-v1.0.${{ github.run_number }}
+          path: |
+            android/app/build/outputs/apk/debug/Galena-Digital-v1.0.${{ github.run_number }}.apk
+            android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
 
       - name: Create or Update GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v1.0.${{ github.run_number }}
-          name: Radio Cristal HD v1.0.${{ github.run_number }}
+          name: Galena Digital HD v1.0.${{ github.run_number }}
           body: |
-            ### Actualización de Radio Cristal HD (Build ${{ github.run_number }})
+            ### Actualización de Galena Digital HD (Build ${{ github.run_number }})
             - Esta versión se instala **directamente encima** de la versión previa en tu celular sin necesidad de desinstalar.
-            - Descarga el archivo `Radio-Cristal-v1.0.${{ github.run_number }}.apk` adjunto para actualizar de inmediato.
-          files: android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
+            - Descarga el archivo `Galena-Digital-v1.0.${{ github.run_number }}.apk` adjunto para actualizar de inmediato.
+          files: |
+            android/app/build/outputs/apk/debug/Galena-Digital-v1.0.${{ github.run_number }}.apk
+            android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
           draft: false
           prerelease: false
         env:
