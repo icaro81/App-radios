@@ -111,7 +111,7 @@ public class RadioMediaBrowserService extends MediaBrowserServiceCompat {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID,
-                "Radio Cristal Reproducción",
+                "Galena Digital Reproducción",
                 NotificationManager.IMPORTANCE_LOW
             );
             channel.setDescription("Controles de audio y emisión para Android Auto y móvil");
@@ -137,7 +137,7 @@ public class RadioMediaBrowserService extends MediaBrowserServiceCompat {
                 .setMediaId(s.id)
                 .setTitle(s.title)
                 .setSubtitle(s.subtitle)
-                .setDescription("Radio Cristal HD")
+                .setDescription("Galena Digital")
                 .build();
             items.add(new MediaBrowserCompat.MediaItem(desc, MediaBrowserCompat.MediaItem.FLAG_PLAYABLE));
         }
@@ -254,7 +254,7 @@ public class RadioMediaBrowserService extends MediaBrowserServiceCompat {
             .putString(MediaMetadataCompat.METADATA_KEY_MEDIA_ID, station.id)
             .putString(MediaMetadataCompat.METADATA_KEY_TITLE, station.title)
             .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, station.subtitle)
-            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Radio Cristal HD")
+            .putString(MediaMetadataCompat.METADATA_KEY_ALBUM, "Galena Digital")
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_TITLE, station.title)
             .putString(MediaMetadataCompat.METADATA_KEY_DISPLAY_SUBTITLE, station.subtitle)
             .build();
@@ -274,7 +274,7 @@ public class RadioMediaBrowserService extends MediaBrowserServiceCompat {
             .setSmallIcon(R.mipmap.ic_launcher)
             .setContentTitle(station.title)
             .setContentText(isBuffering ? "Conectando señal..." : station.subtitle)
-            .setSubText("Radio Cristal HD")
+            .setSubText("Galena Digital")
             .setContentIntent(contentPi)
             .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
             .setOnlyAlertOnce(true)

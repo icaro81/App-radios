@@ -28,7 +28,7 @@ export function useMediaSession({
       navigator.mediaSession.metadata = new MediaMetadata({
         title: currentStation.name,
         artist: 'Radio en Directo • Streaming HD',
-        album: 'Radio Cristal',
+        album: 'Galena Digital',
         artwork: [
           { src: '/pwa-192x192.png', sizes: '192x192', type: 'image/png' },
           { src: '/pwa-512x512.png', sizes: '512x512', type: 'image/png' },

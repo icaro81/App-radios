@@ -208,7 +208,7 @@ export default function App() {
         setUpdateInfo(update);
         setIsUpdateModalOpen(true);
       } else if (isManual) {
-        alert(`Radio Cristal HD está al día (Versión ${APP_VERSION})`);
+        alert(`Galena Digital está al día (Versión ${APP_VERSION})`);
       }
     } catch {
       if (isManual) {
@@ -217,6 +217,109 @@ export default function App() {
     } finally {
       setIsCheckingUpdate(false);
     }
+  }, []);
+
+  // Back-button & Exit coordination for Android TV / TV Box
+  const [showExitToast, setShowExitToast] = useState<boolean>(false);
+  const exitToastTimerRef = useRef<number | null>(null);
+  const lastBackPressTimeRef = useRef<number>(0);
+
+  // Keep references to open modals for synchronous access
+  const modalsRef = useRef({
+    isEqOpen,
+    isAddModalOpen,
+    isUpdateModalOpen,
+  });
+  useEffect(() => {
+    modalsRef.current = {
+      isEqOpen,
+      isAddModalOpen,
+      isUpdateModalOpen,
+    };
+  }, [isEqOpen, isAddModalOpen, isUpdateModalOpen]);
+
+  // Expose hooks for Android MainActivity bridge:
+  // 1 click back: closes modal if open, returns true.
+  // If no modal open: returns false (so native can track 2-click exit).
+  useEffect(() => {
+    window.__onNativeBackPress = () => {
+      if (modalsRef.current.isEqOpen) {
+        setIsEqOpen(false);
+        return true;
+      }
+      if (modalsRef.current.isAddModalOpen) {
+        setIsAddModalOpen(false);
+        return true;
+      }
+      if (modalsRef.current.isUpdateModalOpen) {
+        setIsUpdateModalOpen(false);
+        return true;
+      }
+      return false;
+    };
+
+    window.__showExitToast = () => {
+      setShowExitToast(true);
+      if (exitToastTimerRef.current) clearTimeout(exitToastTimerRef.current);
+      exitToastTimerRef.current = window.setTimeout(() => {
+        setShowExitToast(false);
+      }, 2000);
+    };
+
+    return () => {
+      delete window.__onNativeBackPress;
+      delete window.__showExitToast;
+    };
+  }, []);
+
+  // Web & TV Box keyboard listener for Back button (Key code 4 or Escape 27)
+  useEffect(() => {
+    const handleGlobalKeyDown = (e: KeyboardEvent) => {
+      const code = e.keyCode || e.which;
+      if (e.key === 'Escape' || code === 27 || code === 4) {
+        // 1 click back: if any modal is open, close it
+        if (modalsRef.current.isEqOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsEqOpen(false);
+          return;
+        }
+        if (modalsRef.current.isAddModalOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsAddModalOpen(false);
+          return;
+        }
+        if (modalsRef.current.isUpdateModalOpen) {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsUpdateModalOpen(false);
+          return;
+        }
+
+        // 2 clicks back: if no modal is open, require 2 presses within 2s to close app
+        const now = Date.now();
+        if (now - lastBackPressTimeRef.current < 2000) {
+          const nativeUpdater = (window as unknown as { AndroidAppUpdater?: { exitApp?: () => void } }).AndroidAppUpdater;
+          if (nativeUpdater?.exitApp) {
+            nativeUpdater.exitApp();
+          }
+        } else {
+          lastBackPressTimeRef.current = now;
+          e.preventDefault();
+          setShowExitToast(true);
+          if (exitToastTimerRef.current) clearTimeout(exitToastTimerRef.current);
+          exitToastTimerRef.current = window.setTimeout(() => {
+            setShowExitToast(false);
+          }, 2000);
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleGlobalKeyDown, true);
+    return () => {
+      window.removeEventListener('keydown', handleGlobalKeyDown, true);
+    };
   }, []);
 
   useEffect(() => {
@@ -657,13 +760,13 @@ export default function App() {
                   <span
                     className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                       isPlaying
-                        ? 'bg-emerald-400 shadow-[0_0_10px_#34d399]'
+                        ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]'
                         : isLoading
                         ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-ping'
                         : 'bg-neutral-600'
                     }`}
                   />
-                  <span className="text-[11px] font-mono tracking-wider uppercase text-neutral-400 font-medium">
+                  <span className="text-[11px] font-mono tracking-wider uppercase text-white font-medium">
                     {isPlaying ? 'EN DIRECTO' : isLoading ? 'CONECTANDO...' : 'PAUSADO'}
                   </span>
                 </div>
@@ -672,13 +775,13 @@ export default function App() {
                   <button
                     id="mobile-eq-btn"
                     onClick={() => setIsEqOpen(true)}
-                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 transition-all cursor-pointer active:scale-95"
+                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 transition-all cursor-pointer active:scale-95"
                     title="Abrir ecualizador de 4 bandas"
                   >
-                    <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                    <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
                     <span>EQ 4-BANDAS</span>
                   </button>
-                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400">
+                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white font-medium">
                     {currentStation.badge || 'ESTÉREO HD'}
                   </div>
                 </div>
@@ -690,7 +793,7 @@ export default function App() {
                   <div className="absolute inset-0 bg-white/5 rounded-2xl blur-[1px]" />
                   <img
                     src="/icon.svg"
-                    alt="Radio Cristal Icon"
+                    alt="Galena Digital Icon"
                     className="w-full h-full object-contain relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
                   />
                 </div>
@@ -701,7 +804,7 @@ export default function App() {
                 <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">
                   {currentStation.name}
                 </h1>
-                <p className="text-[11px] text-neutral-400 font-normal tracking-wide">
+                <p className="text-[11px] text-white font-normal tracking-wide">
                   {currentStation.subtitle || 'Transmisión Online'}
                 </p>
               </div>
@@ -727,7 +830,7 @@ export default function App() {
                 id="prev-station-btn"
                 onClick={prevStation}
                 title="Estación anterior"
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border border-white/10 flex items-center justify-center text-neutral-300 hover:text-white transition-transform active:scale-90 cursor-pointer shadow-lg hover:border-white/25"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border border-white/10 flex items-center justify-center text-white hover:text-cyan-300 transition-transform active:scale-90 cursor-pointer shadow-lg hover:border-cyan-400/30"
               >
                 <RotateCw className="w-4 h-4 -scale-x-100" />
               </button>
@@ -737,7 +840,7 @@ export default function App() {
                 <div
                   className={`absolute -inset-2 rounded-full transition-all duration-300 ${
                     isPlaying
-                      ? 'bg-white/20 blur-md group-hover:bg-white/30'
+                      ? 'bg-cyan-400/20 blur-md group-hover:bg-cyan-400/30'
                       : 'bg-transparent blur-none'
                   }`}
                 />
@@ -748,8 +851,8 @@ export default function App() {
                   aria-label={isPlaying ? 'Pausar transmisión' : 'Reproducir transmisión'}
                   className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-200 ease-out cursor-pointer active:scale-95 ${
                     isPlaying
-                      ? 'bg-white text-black shadow-[0_0_25px_rgba(255,255,255,0.4)] border-2 border-white'
-                      : 'glass-button-active text-white border-2 border-white/30 hover:border-white/50 shadow-[0_8px_25px_rgba(0,0,0,0.8)]'
+                      ? 'bg-cyan-400 text-black shadow-[0_0_25px_rgba(6,182,212,0.6)] border-2 border-cyan-300'
+                      : 'glass-button-active text-white border-2 border-cyan-400/40 hover:border-cyan-400 shadow-[0_8px_25px_rgba(0,0,0,0.8)]'
                   }`}
                 >
                   {isLoading ? (
@@ -767,7 +870,7 @@ export default function App() {
                 id="next-station-btn"
                 onClick={nextStation}
                 title="Siguiente estación"
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border border-white/10 flex items-center justify-center text-neutral-300 hover:text-white transition-transform active:scale-90 cursor-pointer shadow-lg hover:border-white/25"
+                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border border-white/10 flex items-center justify-center text-white hover:text-cyan-300 transition-transform active:scale-90 cursor-pointer shadow-lg hover:border-cyan-400/30"
               >
                 <RotateCw className="w-4 h-4" />
               </button>
@@ -779,13 +882,13 @@ export default function App() {
                 <button
                   id="toggle-mute-btn"
                   onClick={toggleMute}
-                  className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  className="text-white hover:text-cyan-300 transition-colors cursor-pointer"
                   title={isMuted ? 'Activar sonido' : 'Silenciar'}
                 >
                   {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4 text-neutral-500" />
+                    <VolumeX className="w-4 h-4 text-white" />
                   ) : (
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className="w-4 h-4 text-white" />
                   )}
                 </button>
 
@@ -800,10 +903,10 @@ export default function App() {
                     setVolume(parseFloat(e.target.value));
                     if (isMuted) setIsMuted(false);
                   }}
-                  className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-white"
+                  className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
                 />
 
-                <span className="text-[10px] font-mono text-neutral-400 w-8 text-right">
+                <span className="text-[10px] font-mono text-white w-8 text-right font-semibold">
                   {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
                 </span>
               </div>
@@ -822,25 +925,25 @@ export default function App() {
             </div>
 
             {/* App Version & In-App Update Trigger */}
-            <div className="mt-2 pt-2 border-t border-white/5 flex items-center justify-between px-1 text-[10px] font-mono text-neutral-500">
-              <span>Radio Cristal HD v{APP_VERSION}</span>
+            <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between px-1 text-[10px] font-mono text-white">
+              <span>Galena Digital v{APP_VERSION}</span>
               <div className="flex items-center gap-3">
                 <button
                   id="footer-eq-btn"
                   onClick={() => setIsEqOpen(true)}
-                  className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-white hover:text-cyan-300 transition-colors cursor-pointer"
                   title="Ecualizador de audio de 4 bandas"
                 >
-                  <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                  <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
                   <span>Ecualizador</span>
                 </button>
                 <button
                   id="check-updates-btn"
                   onClick={() => performUpdateCheck(true)}
-                  className="flex items-center gap-1 text-neutral-400 hover:text-white transition-colors cursor-pointer"
+                  className="flex items-center gap-1 text-white hover:text-cyan-300 transition-colors cursor-pointer"
                   title="Buscar actualizaciones"
                 >
-                  <Sparkles className="w-3 h-3 text-emerald-400" />
+                  <Sparkles className="w-3 h-3 text-cyan-400" />
                   <span>{isCheckingUpdate ? 'Comprobando...' : 'Actualizar'}</span>
                 </button>
               </div>
@@ -880,6 +983,17 @@ export default function App() {
         preload="none"
         playsInline
       />
+
+      {/* Android TV & Mobile Double-Back Exit Toast */}
+      {showExitToast && (
+        <div
+          id="exit-toast"
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 px-4 py-2 rounded-full bg-neutral-900 border border-white/20 text-white font-mono text-xs z-50 pointer-events-none flex items-center gap-2 animate-in fade-in duration-100"
+        >
+          <span className="w-2 h-2 rounded-full bg-amber-400" />
+          <span>Presiona atrás de nuevo para salir</span>
+        </div>
+      )}
     </main>
   );
 }

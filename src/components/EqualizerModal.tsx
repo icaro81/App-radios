@@ -28,7 +28,7 @@ const PRESETS: { name: string; icon: string; bands: EqualizerBands }[] = [
   { name: 'Plano', icon: '⚖️', bands: { bass: 0, mid: 0, intermediate: 0, treble: 0 } },
   { name: 'Refuerzo Bajo', icon: '🔊', bands: { bass: 6, mid: 1, intermediate: 0, treble: 2 } },
   { name: 'Voz Clara', icon: '🎙️', bands: { bass: -2, mid: 4, intermediate: 3, treble: 1 } },
-  { name: 'Cristal HD', icon: '✨', bands: { bass: 4, mid: -1, intermediate: 2, treble: 5 } },
+  { name: 'Galena HD', icon: '✨', bands: { bass: 4, mid: -1, intermediate: 2, treble: 5 } },
 ];
 
 const BAND_CONFIGS: {
@@ -100,10 +100,10 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
   return (
     <div
       onMouseEnter={onSelect}
-      className={`flex flex-col items-center justify-between rounded-2xl p-2 transition-all duration-100 select-none ${
+      className={`flex flex-col items-center justify-between rounded-2xl p-2 select-none ${
         isFocused
-          ? 'bg-emerald-950/40 border-2 border-emerald-400 ring-2 ring-emerald-400/60 scale-[1.03] shadow-[0_0_20px_rgba(16,185,129,0.35)]'
-          : 'bg-black/40 border border-white/10 hover:border-white/20'
+          ? 'bg-cyan-950/40 border-2 border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+          : 'bg-white/[0.04] border border-white/15'
       }`}
     >
       {/* Top Header: Label, Freq & dB */}
@@ -111,20 +111,18 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         <span className="font-bold text-xs uppercase tracking-wider text-white">
           {label}
         </span>
-        <span className="text-[9px] font-mono text-neutral-400">
+        <span className="text-[9px] font-mono text-white font-medium">
           {freq}
         </span>
 
         {/* Current dB badge */}
         <div
-          className={`mt-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold transition-colors ${
+          className={`mt-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
             isFocused
-              ? 'bg-emerald-400 text-black shadow-sm'
-              : value > 0
-              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-              : value < 0
-              ? 'bg-rose-500/20 text-rose-400 border border-rose-500/30'
-              : 'bg-white/5 text-neutral-400 border border-white/5'
+              ? 'bg-cyan-400 text-black shadow-[0_0_8px_#22d3ee]'
+              : value !== 0
+              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+              : 'bg-white/10 text-white border border-white/20'
           }`}
         >
           {formattedVal} dB
@@ -139,7 +137,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
           onSelect();
           onChange(Math.min(12, Number((value + 1).toFixed(1))));
         }}
-        className="my-1.5 w-7 h-6 rounded-md bg-white/5 hover:bg-white/15 active:scale-95 text-neutral-300 hover:text-white text-xs font-bold font-mono flex items-center justify-center cursor-pointer transition-colors"
+        className="my-1.5 w-7 h-6 rounded-md bg-white/10 hover:bg-white/20 active:scale-95 text-white hover:text-cyan-300 text-xs font-bold font-mono flex items-center justify-center cursor-pointer"
         title="Subir +1 dB"
       >
         ▲
@@ -153,14 +151,14 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         className="relative w-8 h-28 sm:h-32 flex items-center justify-center cursor-pointer touch-none"
       >
         {/* Track Groove */}
-        <div className="absolute inset-y-0 w-2 rounded-full bg-neutral-900 border border-white/15 overflow-hidden">
+        <div className="absolute inset-y-0 w-2 rounded-full bg-black/80 border border-white/20 overflow-hidden">
           {/* Zero dB reference center line indicator */}
-          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/40 z-10" />
+          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/60 z-10" />
 
-          {/* Active Level Fill from center (0 dB) */}
+          {/* Active Level Fill from center (0 dB) with Digital Cyan */}
           {value >= 0 ? (
             <div
-              className="absolute left-0 right-0 bg-gradient-to-t from-emerald-600 to-emerald-400 transition-all duration-75"
+              className="absolute left-0 right-0 bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
               style={{
                 bottom: '50%',
                 height: `${Math.max(0, percent - 50)}%`,
@@ -168,7 +166,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
             />
           ) : (
             <div
-              className="absolute left-0 right-0 bg-gradient-to-b from-rose-600 to-rose-400 transition-all duration-75"
+              className="absolute left-0 right-0 bg-cyan-700"
               style={{
                 top: '50%',
                 height: `${Math.max(0, 50 - percent)}%`,
@@ -178,7 +176,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         </div>
 
         {/* Level Scale Ticks (Left & Right) */}
-        <div className="absolute inset-y-0 left-0 flex flex-col justify-between pointer-events-none py-1 text-[8px] font-mono text-neutral-600">
+        <div className="absolute inset-y-0 left-0 flex flex-col justify-between pointer-events-none py-1 text-[8px] font-mono text-white font-semibold">
           <span>+</span>
           <span>0</span>
           <span>-</span>
@@ -186,10 +184,10 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
 
         {/* Fader Knob (Deslizador) */}
         <div
-          className={`absolute w-7 h-4 rounded shadow-md flex items-center justify-center border transition-all duration-75 pointer-events-none z-20 ${
+          className={`absolute w-7 h-4 rounded flex items-center justify-center border pointer-events-none z-20 ${
             isFocused
-              ? 'bg-gradient-to-b from-white to-emerald-200 border-emerald-300 ring-2 ring-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.8)]'
-              : 'bg-gradient-to-b from-neutral-200 to-neutral-400 border-white/60 shadow-black/60'
+              ? 'bg-cyan-400 border-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.8)]'
+              : 'bg-white border-white/80 shadow-md'
           }`}
           style={{
             bottom: `calc(${percent}% - 8px)`,
@@ -198,7 +196,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
           {/* Center LED notch line */}
           <div
             className={`w-3.5 h-[2px] rounded-full ${
-              isFocused ? 'bg-emerald-600' : 'bg-neutral-700'
+              isFocused ? 'bg-black' : 'bg-neutral-800'
             }`}
           />
         </div>
@@ -212,7 +210,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
           onSelect();
           onChange(Math.max(-12, Number((value - 1).toFixed(1))));
         }}
-        className="my-1.5 w-7 h-6 rounded-md bg-white/5 hover:bg-white/15 active:scale-95 text-neutral-300 hover:text-white text-xs font-bold font-mono flex items-center justify-center cursor-pointer transition-colors"
+        className="my-1.5 w-7 h-6 rounded-md bg-white/10 hover:bg-white/20 active:scale-95 text-white hover:text-cyan-300 text-xs font-bold font-mono flex items-center justify-center cursor-pointer"
         title="Bajar -1 dB"
       >
         ▼
@@ -220,7 +218,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
 
       {/* Remote Helper Hint */}
       {isFocused && (
-        <span className="text-[9px] font-mono font-bold text-emerald-400 animate-pulse tracking-tighter">
+        <span className="text-[9px] font-mono font-bold text-cyan-300 tracking-tighter">
           [▲▼ dB]
         </span>
       )}
@@ -382,25 +380,22 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md p-2 sm:p-4 overflow-hidden animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4 overflow-hidden">
       <div
-        className="w-full max-w-lg sm:max-w-xl landscape:max-w-xl rounded-2xl sm:rounded-3xl glass-surface border border-white/20 p-3 sm:p-4 text-white shadow-2xl relative overflow-hidden flex flex-col"
+        className="w-full max-w-lg sm:max-w-xl landscape:max-w-xl rounded-2xl bg-[#101016] border border-white/15 p-3 sm:p-4 text-white relative overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Specular sheen */}
-        <div className="absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
-
         {/* 1. Header (Compact) */}
         <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 shrink-0">
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-white/10 flex items-center justify-center border border-white/15 text-white shrink-0">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
+            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-400/30 text-white shrink-0">
+              <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />
             </div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm font-bold text-white tracking-wide">
                 Ecualizador Gráfico
               </h2>
-              <span className="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+              <span className="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
                 4 BANDAS HD
               </span>
             </div>
@@ -410,10 +405,10 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
             type="button"
             onClick={onClose}
             onMouseEnter={() => setFocusedItem('eq-close')}
-            className={`w-7 h-7 rounded-full flex items-center justify-center transition-all cursor-pointer ${
+            className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
               focusedItem === 'eq-close'
-                ? 'bg-white text-black ring-2 ring-white scale-110'
-                : 'bg-white/5 hover:bg-white/10 text-neutral-400 hover:text-white'
+                ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 shadow-[0_0_10px_#22d3ee]'
+                : 'bg-white/10 hover:bg-white/20 text-white'
             }`}
             title="Cerrar"
           >
@@ -424,8 +419,8 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
         {/* 2. Quick Presets Row (Horizontally compact) */}
         <div className="flex items-center justify-between gap-1.5 pb-2.5 shrink-0">
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1">
-            <span className="text-[9px] font-mono uppercase tracking-wider text-neutral-500 flex items-center gap-1 mr-1 shrink-0">
-              <Sparkles className="w-2.5 h-2.5 text-emerald-400" />
+            <span className="text-[9px] font-mono uppercase tracking-wider text-white flex items-center gap-1 mr-1 shrink-0 font-semibold">
+              <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
               Perfiles:
             </span>
             {PRESETS.map((p, index) => {
@@ -437,16 +432,16 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
                   type="button"
                   onClick={() => onApplyPreset(p.bands)}
                   onMouseEnter={() => setFocusedItem(`preset-${index}`)}
-                  className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all cursor-pointer shrink-0 ${
+                  className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0 transition-all ${
                     isFocused
-                      ? 'bg-emerald-400 text-black ring-2 ring-white font-bold scale-105 shadow-md'
+                      ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 font-bold shadow-[0_0_10px_#22d3ee]'
                       : active
-                      ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-                      : 'bg-white/5 hover:bg-white/10 text-neutral-300 border border-white/5'
+                      ? 'bg-cyan-500/30 text-white border border-cyan-400/60 font-bold'
+                      : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
                   }`}
                 >
                   <span className="text-[10px]">{p.icon}</span>
-                  <span className="text-[10px] whitespace-nowrap">{p.name}</span>
+                  <span className="text-[10px] whitespace-nowrap text-white font-medium">{p.name}</span>
                 </button>
               );
             })}
@@ -457,15 +452,15 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
             type="button"
             onClick={onReset}
             onMouseEnter={() => setFocusedItem('eq-reset')}
-            className={`px-2 py-1 rounded-lg text-[10px] font-mono flex items-center gap-1 transition-all cursor-pointer shrink-0 ${
+            className={`px-2 py-1 rounded-lg text-[10px] font-mono flex items-center gap-1 cursor-pointer shrink-0 transition-all ${
               focusedItem === 'eq-reset'
-                ? 'ring-2 ring-white bg-white text-black font-bold'
-                : 'text-neutral-400 hover:text-white bg-white/5 border border-white/5'
+                ? 'ring-2 ring-cyan-300 bg-cyan-400 text-black font-bold shadow-[0_0_10px_#22d3ee]'
+                : 'text-white hover:text-cyan-300 bg-white/10 hover:bg-white/20 border border-white/10'
             }`}
             title="Restablecer todas las bandas a 0 dB"
           >
-            <RotateCcw className="w-2.5 h-2.5" />
-            <span>0 dB</span>
+            <RotateCcw className="w-2.5 h-2.5 text-white" />
+            <span className="text-white font-semibold">0 dB</span>
           </button>
         </div>
 
@@ -491,10 +486,10 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
 
         {/* 4. Footer Bar: Status, Remote Navigation Legend & Done Button */}
         <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-white/10 shrink-0">
-          <div className="flex items-center gap-1.5 text-[10px] text-neutral-400">
-            <Volume2 className="w-3.5 h-3.5 text-emerald-400" />
-            <span className="hidden sm:inline">Mando TV:</span>
-            <span className="font-mono text-[9px] text-neutral-400">
+          <div className="flex items-center gap-1.5 text-[10px] text-white">
+            <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+            <span className="hidden sm:inline font-semibold">Mando TV:</span>
+            <span className="font-mono text-[9px] text-white">
               [▲▼] Ajustar dB • [◄►] Cambiar banda
             </span>
           </div>
@@ -504,10 +499,10 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
             type="button"
             onClick={onClose}
             onMouseEnter={() => setFocusedItem('eq-done')}
-            className={`px-5 py-1.5 rounded-xl font-bold text-xs transition-all cursor-pointer ${
+            className={`px-5 py-1.5 rounded-xl font-bold text-xs cursor-pointer transition-all ${
               focusedItem === 'eq-done'
-                ? 'bg-white text-black ring-4 ring-white/80 scale-105 shadow-[0_0_20px_rgba(255,255,255,0.6)]'
-                : 'bg-white text-black hover:bg-neutral-200'
+                ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 font-bold shadow-[0_0_12px_#22d3ee]'
+                : 'bg-white text-black hover:bg-cyan-300'
             }`}
           >
             Listo

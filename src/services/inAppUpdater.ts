@@ -2,6 +2,7 @@ interface InAppUpdaterGlobal {
   isNativeAvailable?: () => boolean;
   isDownloading?: () => boolean;
   startDownloadAndInstall?: (apkUrl: string) => void;
+  exitApp?: () => void;
 }
 
 declare global {
@@ -10,6 +11,8 @@ declare global {
     __onInAppUpdateProgress?: (percent: number, bytesRead: number, totalBytes: number) => void;
     __onInAppUpdateSuccess?: () => void;
     __onInAppUpdateError?: (error: string) => void;
+    __onNativeBackPress?: () => boolean;
+    __showExitToast?: () => void;
   }
 }
 

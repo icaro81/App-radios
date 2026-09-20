@@ -100,13 +100,13 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   <span
                     className={`w-2 h-2 rounded-full transition-colors duration-200 ${
                       isPlaying
-                        ? 'bg-emerald-400 shadow-[0_0_8px_#34d399]'
+                        ? 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
                         : isLoading
                         ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-ping'
                         : 'bg-neutral-600'
                     }`}
                   />
-                  <span className="text-[11px] font-mono tracking-wider uppercase text-neutral-400 font-medium">
+                  <span className="text-[11px] font-mono tracking-wider uppercase text-white font-medium">
                     {isPlaying ? 'EN DIRECTO' : isLoading ? 'CONECTANDO...' : 'PAUSADO'}
                   </span>
                 </div>
@@ -119,16 +119,16 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                       onMouseEnter={() => onSetFocus('eq-btn')}
                       className={`flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border transition-all cursor-pointer ${
                         focusedElement === 'eq-btn'
-                          ? 'border-white bg-white text-black font-bold scale-105 ring-2 ring-white/80 shadow-[0_0_12px_rgba(255,255,255,0.4)]'
-                          : 'bg-emerald-500/10 hover:bg-emerald-500/20 border-emerald-500/30 text-emerald-400'
+                          ? 'border-cyan-300 bg-cyan-400 text-black font-bold scale-105 ring-2 ring-cyan-400/80 shadow-[0_0_12px_rgba(6,182,212,0.6)]'
+                          : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-400/30 text-cyan-300'
                       }`}
                       title="Ecualizador de audio (4 Bandas)"
                     >
-                      <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                      <SlidersHorizontal className={`w-3 h-3 ${focusedElement === 'eq-btn' ? 'text-black' : 'text-cyan-400'}`} />
                       <span>EQ 4-BANDAS</span>
                     </button>
                   )}
-                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-neutral-400">
+                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white">
                     {currentStation.badge || 'ESTÉREO HD'}
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   <div className="absolute inset-0 bg-white/5 rounded-2xl blur-[1px]" />
                   <img
                     src="/icon.svg"
-                    alt="Radio Cristal Icon"
+                    alt="Galena Digital Icon"
                     className="w-full h-full object-contain relative z-10 drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
                   />
                 </div>
@@ -151,7 +151,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                 <h1 className="text-lg sm:text-xl font-bold tracking-tight text-white truncate drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">
                   {currentStation.name}
                 </h1>
-                <p className="text-xs text-neutral-400 font-normal tracking-wide truncate">
+                <p className="text-xs text-white font-normal tracking-wide truncate">
                   {currentStation.subtitle || 'Transmisión Online'}
                 </p>
               </div>
@@ -180,8 +180,8 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                 title="Estación anterior (◄ Flecha Izquierda)"
                 className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full border flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-75 ${
                   focusedElement === 'prev-station'
-                    ? 'border-white bg-white text-black scale-110 ring-4 ring-white/80'
-                    : 'glass-button border-white/10 text-neutral-300 hover:text-white hover:border-white/25'
+                    ? 'border-cyan-300 bg-cyan-400 text-black scale-110 ring-4 ring-cyan-400/80 shadow-[0_0_15px_#22d3ee]'
+                    : 'glass-button border-white/10 text-white hover:text-cyan-300 hover:border-cyan-400/30'
                 }`}
               >
                 <RotateCw className="w-4 h-4 sm:w-5 sm:h-5 -scale-x-100" />
@@ -196,10 +196,10 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   aria-label={isPlaying ? 'Pausar transmisión' : 'Reproducir transmisión'}
                   className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-75 ${
                     focusedElement === 'play-pause'
-                      ? 'ring-4 ring-white scale-110 bg-white text-black font-extrabold border-2 border-white'
+                      ? 'ring-4 ring-cyan-400 scale-110 bg-cyan-400 text-black font-extrabold border-2 border-cyan-200 shadow-[0_0_25px_#22d3ee]'
                       : isPlaying
-                      ? 'bg-white text-black shadow-[0_0_20px_rgba(255,255,255,0.4)] border-2 border-white'
-                      : 'glass-button-active text-white border-2 border-white/30 hover:border-white/50'
+                      ? 'bg-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.6)] border-2 border-cyan-300'
+                      : 'glass-button-active text-white border-2 border-cyan-400/40 hover:border-cyan-400'
                   }`}
                 >
                   {isLoading ? (
@@ -220,8 +220,8 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                 title="Siguiente estación (► Flecha Derecha)"
                 className={`w-12 h-12 sm:w-13 sm:h-13 rounded-full border flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-75 ${
                   focusedElement === 'next-station'
-                    ? 'border-white bg-white text-black scale-110 ring-4 ring-white/80'
-                    : 'glass-button border-white/10 text-neutral-300 hover:text-white hover:border-white/25'
+                    ? 'border-cyan-300 bg-cyan-400 text-black scale-110 ring-4 ring-cyan-400/80 shadow-[0_0_15px_#22d3ee]'
+                    : 'glass-button border-white/10 text-white hover:text-cyan-300 hover:border-cyan-400/30'
                 }`}
               >
                 <RotateCw className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -238,15 +238,15 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   onMouseEnter={() => onSetFocus('mute')}
                   className={`p-1.5 rounded-xl cursor-pointer transition-all duration-75 ${
                     focusedElement === 'mute'
-                      ? 'ring-2 ring-white bg-white text-black scale-110 shadow-lg'
-                      : 'text-neutral-400 hover:text-white'
+                      ? 'ring-2 ring-cyan-300 bg-cyan-400 text-black scale-110 shadow-[0_0_10px_#22d3ee]'
+                      : 'text-white hover:text-cyan-300'
                   }`}
                   title={isMuted ? 'Activar sonido' : 'Silenciar'}
                 >
                   {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4 text-neutral-500" />
+                    <VolumeX className="w-4 h-4 text-white" />
                   ) : (
-                    <Volume2 className="w-4 h-4" />
+                    <Volume2 className="w-4 h-4 text-white" />
                   )}
                 </button>
 
@@ -257,8 +257,8 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   onMouseEnter={() => onSetFocus('vol-down')}
                   className={`w-7 h-7 rounded-lg text-xs font-mono font-bold flex items-center justify-center transition-all duration-75 cursor-pointer ${
                     focusedElement === 'vol-down'
-                      ? 'ring-2 ring-white bg-white text-black scale-110 shadow-lg'
-                      : 'bg-white/5 text-neutral-300 hover:text-white hover:bg-white/10'
+                      ? 'ring-2 ring-cyan-300 bg-cyan-400 text-black scale-110 shadow-[0_0_10px_#22d3ee]'
+                      : 'bg-white/10 text-white hover:text-cyan-300 hover:bg-white/20'
                   }`}
                   title="Bajar volumen (-5%)"
                 >
@@ -277,9 +277,9 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                     onChange={(e) => {
                       onVolumeChange?.(parseFloat(e.target.value));
                     }}
-                    className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-emerald-400"
+                    className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
                   />
-                  <span className="text-[10px] font-mono text-neutral-300 w-8 text-right font-semibold">
+                  <span className="text-[10px] font-mono text-white w-8 text-right font-semibold">
                     {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
                   </span>
                 </div>
@@ -291,8 +291,8 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   onMouseEnter={() => onSetFocus('vol-up')}
                   className={`w-7 h-7 rounded-lg text-xs font-mono font-bold flex items-center justify-center transition-all duration-75 cursor-pointer ${
                     focusedElement === 'vol-up'
-                      ? 'ring-2 ring-white bg-white text-black scale-110 shadow-lg'
-                      : 'bg-white/5 text-neutral-300 hover:text-white hover:bg-white/10'
+                      ? 'ring-2 ring-cyan-300 bg-cyan-400 text-black scale-110 shadow-[0_0_10px_#22d3ee]'
+                      : 'bg-white/10 text-white hover:text-cyan-300 hover:bg-white/20'
                   }`}
                   title="Subir volumen (+5%)"
                 >
@@ -307,12 +307,12 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                     onMouseEnter={() => onSetFocus('eq-btn')}
                     className={`p-1.5 px-2.5 rounded-xl cursor-pointer transition-all duration-75 flex items-center gap-1 shrink-0 ${
                       focusedElement === 'eq-btn'
-                        ? 'border-2 border-emerald-400 ring-2 ring-emerald-400/80 bg-emerald-500/30 text-emerald-200 font-bold scale-110 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                        : 'glass-button border border-white/10 text-emerald-400 hover:text-emerald-300 hover:bg-white/10'
+                        ? 'border-2 border-cyan-300 ring-2 ring-cyan-400/80 bg-cyan-400 text-black font-bold scale-110 shadow-[0_0_15px_#22d3ee]'
+                        : 'glass-button border border-white/10 text-cyan-400 hover:text-cyan-300 hover:bg-white/10'
                     }`}
                     title="Ecualizador de audio de 4 bandas"
                   >
-                    <SlidersHorizontal className="w-3.5 h-3.5 text-emerald-400" />
+                    <SlidersHorizontal className="w-3.5 h-3.5" />
                     <span className="text-[10px] font-mono font-bold">EQ</span>
                   </button>
                 )}
@@ -325,10 +325,10 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
             <div>
               {/* Header matching mobile */}
               <div className="flex items-center justify-between mb-2 px-1">
-                <span className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">
+                <span className="text-[11px] font-semibold tracking-widest uppercase text-white">
                   SINTONÍAS DISPONIBLES
                 </span>
-                <span className="text-[10px] font-mono text-neutral-500">
+                <span className="text-[10px] font-mono text-white font-medium">
                   {stations.length} EN LÍNEA
                 </span>
               </div>
@@ -349,24 +349,24 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                         onMouseEnter={() => onSetFocus(`station-${station.id}`)}
                         className={`relative w-full h-[58px] text-left rounded-2xl p-2.5 overflow-hidden select-none cursor-pointer flex items-center gap-2.5 transition-transform duration-75 ${
                           isTargetFocused
-                            ? 'border-2 border-white ring-2 ring-white bg-white/25 text-white scale-[1.01]'
+                            ? 'border-2 border-cyan-400 ring-2 ring-cyan-400/60 bg-cyan-950/60 text-white scale-[1.01] shadow-[0_0_15px_rgba(6,182,212,0.35)]'
                             : isActive
-                            ? 'glass-button-active border border-white/35 text-white shadow-[0_0_12px_rgba(255,255,255,0.15)]'
-                            : 'glass-button border border-white/10 text-neutral-300 hover:text-white hover:border-white/20'
+                            ? 'glass-button-active border border-cyan-400/50 text-white shadow-[0_0_12px_rgba(6,182,212,0.25)]'
+                            : 'glass-button border border-white/10 text-white hover:border-cyan-400/30'
                         }`}
                       >
                         {/* Diagonal Glass Sheen */}
                         <div className="absolute inset-0 pointer-events-none glass-sheen opacity-60 group-hover/tvcard:opacity-100" />
                         
                         {/* Top highlight line */}
-                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+                        <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/30 to-transparent pointer-events-none" />
 
                         {/* Icon Container with Channel Number or Radio Icon */}
                         <div
                           className={`flex-shrink-0 w-8 h-8 rounded-xl flex items-center justify-center ${
                             isActive
-                              ? 'bg-white text-black'
-                              : 'bg-white/5 text-neutral-400 border border-white/5'
+                              ? 'bg-cyan-400 text-black font-bold shadow-[0_0_8px_#22d3ee]'
+                              : 'bg-white/10 text-white border border-white/10'
                           }`}
                         >
                           {isLoadingThis ? (
@@ -382,7 +382,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-1.5">
                             {idx < 9 && (
-                              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-white/10 text-neutral-300">
+                              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-white/15 text-white font-semibold">
                                 {idx + 1}
                               </span>
                             )}
@@ -390,7 +390,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                               {station.name}
                             </span>
                           </div>
-                          <span className="block text-[10px] text-neutral-400 truncate mt-0.5 font-mono">
+                          <span className="block text-[10px] text-white truncate mt-0.5 font-mono">
                             {isLoadingThis
                               ? 'Conectando...'
                               : isPlayingThis
@@ -401,7 +401,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
 
                         {/* Active indicator bar at bottom */}
                         {isActive && (
-                          <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent" />
+                          <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
                         )}
                       </button>
 
@@ -412,7 +412,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                             e.stopPropagation();
                             onRemoveCustomStation(station.id);
                           }}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-neutral-500 hover:text-red-400 hover:bg-white/10 transition-colors z-20 cursor-pointer"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-lg text-white hover:text-red-400 hover:bg-white/10 transition-colors z-20 cursor-pointer"
                           title="Eliminar sintonía"
                         >
                           <Trash2 className="w-3.5 h-3.5" />
@@ -429,12 +429,12 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   onMouseEnter={() => onSetFocus('add-station')}
                   className={`w-full h-[58px] rounded-2xl border flex items-center justify-center gap-2 cursor-pointer transition-transform duration-75 ${
                     focusedElement === 'add-station'
-                      ? 'border-2 border-white ring-2 ring-white bg-white text-black font-bold scale-[1.01]'
-                      : 'border-dashed border-white/20 bg-white/[0.02] text-neutral-400 hover:text-white hover:bg-white/5'
+                      ? 'border-2 border-cyan-400 ring-2 ring-cyan-400 bg-cyan-400 text-black font-bold scale-[1.01] shadow-[0_0_15px_#22d3ee]'
+                      : 'border-dashed border-white/20 bg-white/[0.02] text-white hover:border-cyan-400/40 hover:bg-white/5'
                   }`}
                 >
                   <Plus className="w-3.5 h-3.5" />
-                  <span className="text-[11px] tracking-wider uppercase font-mono">
+                  <span className="text-[11px] tracking-wider uppercase font-mono text-white font-medium">
                     + Sintonía Personalizada
                   </span>
                 </button>
@@ -442,8 +442,8 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
             </div>
 
             {/* Bottom Bar: App Info Footer without manual toggle buttons */}
-            <div className="mt-3 pt-2.5 border-t border-white/5 flex items-center justify-between px-1 text-[10px] font-mono text-neutral-500">
-              <span>Radio Cristal HD v{APP_VERSION}</span>
+            <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between px-1 text-[10px] font-mono text-white">
+              <span>Galena Digital v{APP_VERSION}</span>
               <div className="flex items-center gap-3">
                 {onOpenEqualizer && (
                   <button
@@ -452,12 +452,12 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                     onMouseEnter={() => onSetFocus('eq-btn')}
                     className={`flex items-center gap-1.5 transition-all duration-75 cursor-pointer px-2.5 py-1 rounded-lg ${
                       focusedElement === 'eq-btn'
-                        ? 'bg-emerald-500/30 text-emerald-200 ring-2 ring-emerald-400 border border-emerald-400 font-bold scale-105 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
-                        : 'text-neutral-400 hover:text-white border border-transparent'
+                        ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 border border-cyan-200 font-bold scale-105 shadow-[0_0_12px_#22d3ee]'
+                        : 'text-white hover:text-cyan-300 border border-transparent'
                     }`}
                     title="Ecualizador de audio"
                   >
-                    <SlidersHorizontal className="w-3 h-3 text-emerald-400" />
+                    <SlidersHorizontal className={`w-3 h-3 ${focusedElement === 'eq-btn' ? 'text-black' : 'text-cyan-400'}`} />
                     <span>Ecualizador</span>
                   </button>
                 )}
@@ -468,12 +468,12 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                     onMouseEnter={() => onSetFocus('check-updates')}
                     className={`flex items-center gap-1.5 transition-all duration-75 cursor-pointer px-2.5 py-1 rounded-lg ${
                       focusedElement === 'check-updates'
-                        ? 'bg-white text-black ring-2 ring-white border border-white font-bold scale-105 shadow-lg'
-                        : 'text-neutral-400 hover:text-white border border-transparent'
+                        ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 border border-cyan-200 font-bold scale-105 shadow-[0_0_12px_#22d3ee]'
+                        : 'text-white hover:text-cyan-300 border border-transparent'
                     }`}
                     title="Buscar actualizaciones"
                   >
-                    <Sparkles className={`w-3 h-3 ${focusedElement === 'check-updates' ? 'text-black' : 'text-emerald-400'}`} />
+                    <Sparkles className={`w-3 h-3 ${focusedElement === 'check-updates' ? 'text-black' : 'text-cyan-400'}`} />
                     <span>{isCheckingUpdate ? 'Comprobando...' : 'Actualizar'}</span>
                   </button>
                 )}
@@ -484,7 +484,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
       </section>
 
       {/* Discrete Remote Control Legend */}
-      <div className="text-center text-[10px] font-mono text-neutral-500/75 mt-2">
+      <div className="text-center text-[10px] font-mono text-white/80 mt-2">
         Mando a distancia: [OK/Centro] Reproducir • [▲ ▼] Emisoras • [◄ ►] Controles • [1-9] Sintonía directa • [+/-] Volumen
       </div>
     </div>

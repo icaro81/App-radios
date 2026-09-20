@@ -56,16 +56,16 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
 
         // Draw Bar
         if (isLive) {
-          // Pre-calculated vertical gradient for active playback
+          // Pre-calculated digital circuit cyan gradient for active playback
           const grad = ctx.createLinearGradient(0, height, 0, 0);
-          grad.addColorStop(0, '#00e676');
-          grad.addColorStop(0.35, '#39ff14');
-          grad.addColorStop(0.68, '#eab308');
-          grad.addColorStop(0.85, '#ff6a00');
-          grad.addColorStop(1.0, '#ff2200');
+          grad.addColorStop(0, '#0e7490');
+          grad.addColorStop(0.4, '#06b6d4');
+          grad.addColorStop(0.75, '#22d3ee');
+          grad.addColorStop(0.92, '#67e8f9');
+          grad.addColorStop(1.0, '#cffafe');
           ctx.fillStyle = grad;
         } else {
-          ctx.fillStyle = 'rgba(0, 230, 118, 0.25)';
+          ctx.fillStyle = 'rgba(6, 182, 212, 0.2)';
         }
 
         // Rounded bar top
@@ -81,7 +81,7 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
         if (isLive) {
           const peakH = Math.max(barH, (peaks[i] / 100) * maxHeight);
           const peakY = Math.max(1, height - peakH - 4);
-          ctx.fillStyle = peakH > 78 ? '#ff3b00' : peakH > 52 ? '#fbbf24' : '#00e676';
+          ctx.fillStyle = peakH > 78 ? '#ffffff' : peakH > 52 ? '#67e8f9' : '#06b6d4';
           ctx.fillRect(x, peakY, barWidth, 2);
         }
       }
@@ -100,7 +100,7 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
         if (regionBadgeRef.current && currentRegionRef.current !== 'BALANCE') {
           currentRegionRef.current = 'BALANCE';
           regionBadgeRef.current.textContent = 'BALANCE';
-          regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/5 text-neutral-400 border border-white/10';
+          regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20';
         }
         return;
       }
@@ -182,13 +182,13 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
               currentRegionRef.current = newRegion;
               regionBadgeRef.current.textContent = newRegion;
               if (newRegion === 'BASS') {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-emerald-500/20 text-emerald-400 border border-emerald-500/40';
+                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-500/25 text-cyan-300 border border-cyan-400/50';
               } else if (newRegion === 'MID') {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-amber-500/20 text-amber-400 border border-amber-500/40';
+                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-400/30 text-cyan-200 border border-cyan-300/60';
               } else if (newRegion === 'TREBLE') {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-orange-500/20 text-orange-400 border border-orange-500/40';
+                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-300/35 text-white border border-cyan-200/70';
               } else {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/5 text-neutral-400 border border-white/10';
+                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20';
               }
             }
           }
@@ -251,18 +251,18 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
       {/* Top Frequency Region & Band Indicator */}
       <div className="flex items-center justify-between w-full max-w-xs sm:max-w-sm px-2 mb-1 text-[10px] font-mono">
         <div className="flex items-center gap-1.5">
-          <span className="text-neutral-500 uppercase tracking-wider text-[9px]">RESPUESTA:</span>
+          <span className="text-white uppercase tracking-wider text-[9px] font-semibold">RESPUESTA:</span>
           <span
             ref={regionBadgeRef}
-            className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/5 text-neutral-400 border border-white/10"
+            className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20"
           >
             BALANCE
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-neutral-400">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-          <span className="text-[9px] uppercase tracking-wider font-semibold">8 BANDAS</span>
+        <div className="flex items-center gap-1.5 text-white">
+          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse" />
+          <span className="text-[9px] uppercase tracking-wider font-semibold text-white">8 BANDAS</span>
         </div>
       </div>
 
@@ -277,13 +277,13 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
       </div>
 
       {/* VU Decibel Level Scale Markers */}
-      <div className="flex items-center justify-between w-full max-w-xs px-2 mt-0.5 text-[8px] font-mono tracking-widest text-neutral-500 uppercase">
-        <span className="text-emerald-500/80 font-bold">-20dB</span>
-        <span className="text-emerald-400/80 font-bold">-10dB</span>
-        <span className="text-lime-400/80 font-bold">-3dB</span>
-        <span className="text-amber-400/90 font-bold">0dB</span>
-        <span className="text-orange-500 font-bold">+3dB</span>
-        <span className="text-red-500 font-bold">PEAK</span>
+      <div className="flex items-center justify-between w-full max-w-xs px-2 mt-0.5 text-[8px] font-mono tracking-widest text-white uppercase font-bold">
+        <span className="text-white font-bold">-20dB</span>
+        <span className="text-white font-bold">-10dB</span>
+        <span className="text-white font-bold">-3dB</span>
+        <span className="text-white font-bold">0dB</span>
+        <span className="text-white font-bold">+3dB</span>
+        <span className="text-cyan-300 font-bold">PEAK</span>
       </div>
     </div>
   );

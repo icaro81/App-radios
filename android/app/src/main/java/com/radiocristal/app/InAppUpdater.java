@@ -36,12 +36,21 @@ public class InAppUpdater {
     }
 
     @JavascriptInterface
+    public void exitApp() {
+        activity.runOnUiThread(() -> {
+            activity.finish();
+        });
+    }
+
+    @JavascriptInterface
     public void startDownloadAndInstall(final String apkUrl) {
         if (isDownloading) {
             return;
         }
 
-        // On Android 8.0+ (Oreo), verify permission to install unknown apps
+        // On Android 8.0+ (Oreo), verify permission to install unknown apps first
+        // If not granted, open Settings and notify user to grant it BEFORE downloading,
+        // because changing this setting kills the app process!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             if (!activity.getPackageManager().canRequestPackageInstalls()) {
                 try {
@@ -50,6 +59,12 @@ public class InAppUpdater {
                         Uri.parse("package:" + activity.getPackageName())
                     );
                     activity.startActivity(grantIntent);
+
+                    activity.runOnUiThread(() -> {
+                        String js = "if (window.__onInAppUpdateError) window.__onInAppUpdateError('Por favor activa \"Permitir desde esta fuente\" en los Ajustes y vuelve a pulsar Actualizar.');";
+                        webView.evaluateJavascript(js, null);
+                    });
+                    return;
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -74,7 +89,7 @@ public class InAppUpdater {
                     conn.setInstanceFollowRedirects(false);
                     conn.setConnectTimeout(15000);
                     conn.setReadTimeout(30000);
-                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 RadioCristalHD-AppUpdater");
+                    conn.setRequestProperty("User-Agent", "Mozilla/5.0 GalenaDigital-AppUpdater");
 
                     int status = conn.getResponseCode();
                     if (status == HttpURLConnection.HTTP_MOVED_TEMP ||
@@ -103,7 +118,20 @@ public class InAppUpdater {
                 if (cacheDir == null) {
                     cacheDir = activity.getCacheDir();
                 }
-                File apkFile = new File(cacheDir, "RadioCristal_Update.apk");
+
+                // Clean any older APK update files in cache directory
+                try {
+                    File[] oldFiles = cacheDir.listFiles();
+                    if (oldFiles != null) {
+                        for (File f : oldFiles) {
+                            if (f.getName().endsWith(".apk")) {
+                                f.delete();
+                            }
+                        }
+                    }
+                } catch (Exception ignored) {}
+
+                File apkFile = new File(cacheDir, "GalenaDigital_Update.apk");
                 if (apkFile.exists()) {
                     apkFile.delete();
                 }
@@ -137,8 +165,14 @@ public class InAppUpdater {
                 }
 
                 out.flush();
+                try {
+                    out.getFD().sync(); // Ensure bytes are physically committed to flash storage
+                } catch (Exception ignored) {}
                 out.close();
                 out = null;
+
+                // Grant read permission to external package installer
+                apkFile.setReadable(true, false);
 
                 isDownloading = false;
 
@@ -147,7 +181,7 @@ public class InAppUpdater {
                     webView.evaluateJavascript("if (window.__onInAppUpdateSuccess) window.__onInAppUpdateSuccess();", null);
                 });
 
-                // Trigger package installation
+                // Trigger package installation intent
                 Uri apkUri = FileProvider.getUriForFile(
                     activity,
                     activity.getPackageName() + ".fileprovider",
@@ -158,6 +192,8 @@ public class InAppUpdater {
                 installIntent.setDataAndType(apkUri, "application/vnd.android.package-archive");
                 installIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
                 installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                installIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                installIntent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
                 activity.startActivity(installIntent);
 
             } catch (final Exception e) {

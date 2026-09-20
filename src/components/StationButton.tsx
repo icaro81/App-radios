@@ -27,8 +27,8 @@ export const StationButton = ({
         onClick={() => onSelect(station)}
         className={`group relative w-full text-left rounded-2xl p-4 sm:p-5 transition-all duration-300 ease-out overflow-hidden select-none cursor-pointer ${
           isActive
-            ? 'glass-button-active border border-white/30 text-white'
-            : 'glass-button border border-white/10 text-neutral-300 hover:text-white hover:border-white/20'
+            ? 'glass-button-active border border-cyan-400/80 text-white shadow-[0_0_18px_rgba(6,182,212,0.35)]'
+            : 'glass-button border border-white/10 text-white hover:border-cyan-400/30'
         }`}
       >
         {/* Specular Diagonal Reflection Sheen */}
@@ -46,16 +46,16 @@ export const StationButton = ({
             <div
               className={`flex-shrink-0 w-11 h-11 rounded-xl flex items-center justify-center transition-all duration-300 ${
                 isActive
-                  ? 'bg-white/15 text-white shadow-[0_0_15px_rgba(255,255,255,0.25)] border border-white/30'
-                  : 'bg-white/5 text-neutral-400 group-hover:bg-white/10 group-hover:text-white border border-white/5'
+                  ? 'bg-cyan-500/20 text-cyan-300 shadow-[0_0_15px_rgba(6,182,212,0.4)] border border-cyan-400/50'
+                  : 'bg-white/5 text-white group-hover:bg-white/10 border border-white/10'
               }`}
             >
               {isLoadingThis ? (
-                <Loader2 className="w-5 h-5 animate-spin text-white" />
+                <Loader2 className="w-5 h-5 animate-spin text-cyan-400" />
               ) : isPlayingThis ? (
-                <Signal className="w-5 h-5 text-white animate-pulse" />
+                <Signal className="w-5 h-5 text-cyan-400 animate-pulse" />
               ) : (
-                <Radio className="w-5 h-5 transition-transform duration-300 group-hover:scale-105" />
+                <Radio className="w-5 h-5 transition-transform duration-300 group-hover:scale-105 text-white" />
               )}
             </div>
 
@@ -66,12 +66,12 @@ export const StationButton = ({
                   {station.name}
                 </span>
                 {station.badge && (
-                  <span className="px-2 py-0.5 text-[9px] uppercase font-mono tracking-widest bg-white/10 text-neutral-300 rounded-full border border-white/10">
+                  <span className="px-2 py-0.5 text-[9px] uppercase font-mono tracking-widest bg-white/10 text-white rounded-full border border-white/20">
                     {station.badge}
                   </span>
                 )}
               </div>
-              <p className="text-xs text-neutral-400 truncate mt-0.5 font-light">
+              <p className="text-xs text-white truncate mt-0.5 font-normal">
                 {isLoadingThis
                   ? 'Sintonizando...'
                   : isPlayingThis
@@ -87,7 +87,7 @@ export const StationButton = ({
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all duration-200 ${
                 isPlayingThis
-                  ? 'bg-white text-black shadow-[0_0_12px_rgba(255,255,255,0.4)]'
+                  ? 'bg-cyan-400 text-black shadow-[0_0_12px_rgba(6,182,212,0.7)]'
                   : 'bg-white/10 text-white group-hover:bg-white/20 border border-white/10'
               }`}
             >
@@ -102,7 +102,7 @@ export const StationButton = ({
 
         {/* Active bottom ambient indicator bar */}
         {isActive && (
-          <div className="absolute bottom-0 left-4 right-4 h-[2px] bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+          <div className="absolute bottom-0 left-4 right-4 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
         )}
       </button>
 

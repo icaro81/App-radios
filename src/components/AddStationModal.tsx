@@ -26,6 +26,20 @@ export const AddStationModal = ({
   const subtitleInputRef = useRef<HTMLInputElement | null>(null);
   const badgeInputRef = useRef<HTMLInputElement | null>(null);
 
+  React.useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const code = e.keyCode || e.which;
+      if (e.key === 'Escape' || code === 27 || code === 4) {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handlePasteClipboard = async () => {
@@ -128,18 +142,18 @@ export const AddStationModal = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
       <div className="w-full max-w-md rounded-3xl glass-surface border border-white/20 p-6 sm:p-7 text-white shadow-2xl relative overflow-hidden">
         {/* Specular sheen */}
-        <div className="absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent pointer-events-none" />
+        <div className="absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent pointer-events-none" />
         
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-white/10 flex items-center justify-center border border-white/15 text-white">
+            <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center border border-cyan-400/30 text-cyan-400">
               <Radio className="w-5 h-5" />
             </div>
             <div>
               <h2 className="text-lg font-bold text-white tracking-wide">
                 Agregar Nueva Radio
               </h2>
-              <p className="text-xs text-neutral-400">
+              <p className="text-xs text-white">
                 Añade cualquier enlace de streaming MP3 o AAC
               </p>
             </div>
@@ -147,7 +161,7 @@ export const AddStationModal = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 flex items-center justify-center text-neutral-400 hover:text-white transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white hover:text-cyan-300 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -168,7 +182,7 @@ export const AddStationModal = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
+            <label className="block text-xs font-mono uppercase tracking-wider text-white mb-1.5 font-semibold">
               Nombre de la Radio
             </label>
             <div className="relative">
@@ -185,7 +199,7 @@ export const AddStationModal = ({
                   if (error) setError(null);
                 }}
                 placeholder="Ej. Radio Impacto 94.5"
-                className="w-full bg-black/50 border border-white/15 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/50 transition-all"
+                className="w-full bg-black/60 border border-white/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
                 autoFocus
               />
             </div>
@@ -193,7 +207,7 @@ export const AddStationModal = ({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300">
+              <label className="block text-xs font-mono uppercase tracking-wider text-white font-semibold">
                 URL del Stream de Audio
               </label>
               <button
@@ -201,18 +215,18 @@ export const AddStationModal = ({
                 onClick={handlePasteClipboard}
                 className={`flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer px-2 py-0.5 rounded-lg ${
                   pasteSuccess
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10'
+                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+                    : 'text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10'
                 }`}
               >
                 {pasteSuccess ? (
                   <>
-                    <Check className="w-3 h-3 text-emerald-400" />
+                    <Check className="w-3 h-3 text-cyan-300" />
                     <span>¡Enlace pegado!</span>
                   </>
                 ) : (
                   <>
-                    <ClipboardPaste className="w-3 h-3" />
+                    <ClipboardPaste className="w-3 h-3 text-cyan-400" />
                     <span>Pegar enlace</span>
                   </>
                 )}
@@ -244,15 +258,15 @@ export const AddStationModal = ({
                   }, 20);
                 }}
                 placeholder="https://servidor.com:8000/stream"
-                className="w-full bg-black/50 border border-white/15 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-neutral-500 focus:outline-none focus:border-white/50 focus:ring-1 focus:ring-white/50 transition-all font-mono"
+                className="w-full bg-black/60 border border-white/20 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all font-mono"
               />
-              <LinkIcon className="w-4 h-4 text-neutral-500 absolute left-3 top-3 pointer-events-none" />
+              <LinkIcon className="w-4 h-4 text-cyan-400 absolute left-3 top-3 pointer-events-none" />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
+              <label className="block text-xs font-mono uppercase tracking-wider text-white mb-1.5 font-semibold">
                 Subtítulo (Opcional)
               </label>
               <input
@@ -262,12 +276,12 @@ export const AddStationModal = ({
                 onChange={(e) => setSubtitle(e.target.value)}
                 onInput={(e) => setSubtitle((e.target as HTMLInputElement).value)}
                 placeholder="Ej. 94.5 MHz FM"
-                className="w-full bg-black/50 border border-white/15 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/50 transition-all"
+                className="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-neutral-300 mb-1.5">
+              <label className="block text-xs font-mono uppercase tracking-wider text-white mb-1.5 font-semibold">
                 Etiqueta / Badge
               </label>
               <div className="relative">
@@ -278,9 +292,9 @@ export const AddStationModal = ({
                   onChange={(e) => setBadge(e.target.value)}
                   onInput={(e) => setBadge((e.target as HTMLInputElement).value)}
                   placeholder="ONLINE / FM"
-                  className="w-full bg-black/50 border border-white/15 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-white/50 transition-all uppercase font-mono"
+                  className="w-full bg-black/60 border border-white/20 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 transition-all uppercase font-mono"
                 />
-                <Tag className="w-3.5 h-3.5 text-neutral-500 absolute left-2.5 top-2.5 pointer-events-none" />
+                <Tag className="w-3.5 h-3.5 text-cyan-400 absolute left-2.5 top-2.5 pointer-events-none" />
               </div>
             </div>
           </div>
@@ -289,13 +303,13 @@ export const AddStationModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-neutral-400 hover:text-white transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl text-xs font-medium text-white hover:text-cyan-300 transition-colors cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-white text-black text-xs font-bold shadow-[0_0_15px_rgba(255,255,255,0.4)] hover:bg-neutral-200 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-cyan-400 text-black text-xs font-bold shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:bg-cyan-300 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
               <span>Guardar Radio</span>

@@ -88,11 +88,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
       {/* Header bar of the stations section */}
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-widest uppercase text-neutral-400">
+          <span className="text-[11px] font-semibold tracking-widest uppercase text-white">
             SINTONÍAS DISPONIBLES
           </span>
           {pages.length > 1 && (
-            <span className="text-[10px] font-mono text-neutral-500">
+            <span className="text-[10px] font-mono text-white">
               ({currentPage + 1}/{pages.length})
             </span>
           )}
@@ -104,7 +104,7 @@ export const StationGrid: React.FC<StationGridProps> = ({
             <button
               onClick={() => scrollToPage(Math.max(0, currentPage - 1))}
               disabled={currentPage === 0}
-              className="w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-neutral-300 transition-all cursor-pointer"
+              className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-white transition-all cursor-pointer"
               title="Página anterior"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -112,7 +112,7 @@ export const StationGrid: React.FC<StationGridProps> = ({
             <button
               onClick={() => scrollToPage(Math.min(pages.length - 1, currentPage + 1))}
               disabled={currentPage === pages.length - 1}
-              className="w-6 h-6 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-neutral-300 transition-all cursor-pointer"
+              className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-white transition-all cursor-pointer"
               title="Página siguiente"
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -147,8 +147,8 @@ export const StationGrid: React.FC<StationGridProps> = ({
                       onClick={() => onSelectStation(station)}
                       className={`relative w-full h-[56px] sm:h-[62px] text-left rounded-xl sm:rounded-2xl p-2 sm:p-2.5 transition-all duration-200 ease-out overflow-hidden select-none cursor-pointer flex items-center gap-2 sm:gap-2.5 ${
                         isActive
-                          ? 'glass-button-active border border-white/35 text-white shadow-[0_0_15px_rgba(255,255,255,0.18)]'
-                          : 'glass-button border border-white/10 text-neutral-300 hover:text-white hover:border-white/20'
+                          ? 'glass-button-active border border-cyan-400/80 text-white shadow-[0_0_15px_rgba(6,182,212,0.35)]'
+                          : 'glass-button border border-white/10 text-white hover:border-cyan-400/30'
                       }`}
                     >
                       {/* Diagonal Glass Sheen */}
@@ -161,16 +161,16 @@ export const StationGrid: React.FC<StationGridProps> = ({
                       <div
                         className={`flex-shrink-0 w-8 h-8 rounded-lg sm:rounded-xl flex items-center justify-center transition-all ${
                           isActive
-                            ? 'bg-white text-black shadow-[0_0_10px_rgba(255,255,255,0.4)]'
-                            : 'bg-white/5 text-neutral-400 group-hover/card:bg-white/10 group-hover/card:text-white border border-white/5'
+                            ? 'bg-cyan-400 text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]'
+                            : 'bg-white/5 text-white group-hover/card:bg-white/10 border border-white/5'
                         }`}
                       >
                         {isLoadingThis ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
                         ) : isPlayingThis ? (
-                          <Signal className="w-3.5 h-3.5 animate-pulse" />
+                          <Signal className="w-3.5 h-3.5 animate-pulse text-black" />
                         ) : (
-                          <Radio className="w-3.5 h-3.5" />
+                          <Radio className="w-3.5 h-3.5 text-white" />
                         )}
                       </div>
 
@@ -179,7 +179,7 @@ export const StationGrid: React.FC<StationGridProps> = ({
                         <span className="block font-semibold text-xs sm:text-sm tracking-tight truncate text-white leading-tight">
                           {station.name}
                         </span>
-                        <span className="block text-[10px] text-neutral-400 truncate mt-0.5 font-mono">
+                        <span className="block text-[10px] text-white truncate mt-0.5 font-mono">
                           {isLoadingThis
                             ? 'Conectando...'
                             : isPlayingThis
@@ -190,7 +190,7 @@ export const StationGrid: React.FC<StationGridProps> = ({
 
                       {/* Active indicator bar at the bottom */}
                       {isActive && (
-                        <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-white to-transparent" />
+                        <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
                       )}
                     </button>
 
@@ -216,17 +216,17 @@ export const StationGrid: React.FC<StationGridProps> = ({
                 <button
                   key={slot.id}
                   onClick={onOpenAddModal}
-                  className="relative w-full h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border border-dashed border-white/20 hover:border-emerald-400/50 bg-white/[0.02] hover:bg-white/[0.06] transition-all duration-200 p-2 sm:p-2.5 flex items-center justify-center gap-2 cursor-pointer group/add select-none"
+                  className="relative w-full h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border border-dashed border-white/20 hover:border-cyan-400/60 bg-white/[0.02] hover:bg-cyan-500/10 transition-all duration-200 p-2 sm:p-2.5 flex items-center justify-center gap-2 cursor-pointer group/add select-none"
                   title="Agregar nueva transmisión"
                 >
-                  <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 group-hover/add:border-emerald-400/40 group-hover/add:bg-emerald-500/10 flex items-center justify-center text-neutral-400 group-hover/add:text-emerald-400 transition-colors">
+                  <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 group-hover/add:border-cyan-400/40 group-hover/add:bg-cyan-500/20 flex items-center justify-center text-white group-hover/add:text-cyan-300 transition-colors">
                     <Plus className="w-3.5 h-3.5" />
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-xs font-medium text-neutral-300 group-hover/add:text-white truncate">
+                    <span className="block text-xs font-medium text-white truncate">
                       Agregar radio
                     </span>
-                    <span className="block text-[9px] font-mono text-neutral-500 group-hover/add:text-emerald-400/80 truncate">
+                    <span className="block text-[9px] font-mono text-white group-hover/add:text-cyan-300 truncate">
                       + Nueva URL
                     </span>
                   </div>
@@ -246,7 +246,7 @@ export const StationGrid: React.FC<StationGridProps> = ({
               onClick={() => scrollToPage(dotIndex)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 currentPage === dotIndex
-                  ? 'w-5 bg-white shadow-[0_0_8px_rgba(255,255,255,0.6)]'
+                  ? 'w-5 bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
                   : 'w-1.5 bg-white/20 hover:bg-white/40'
               }`}
               title={`Ir a página ${dotIndex + 1}`}

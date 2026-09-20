@@ -46,13 +46,16 @@ public class MainActivity extends BridgeActivity {
                     ? pInfo.getLongVersionCode() 
                     : pInfo.versionCode;
 
-                SharedPreferences prefs = getSharedPreferences("RadioCristalPrefs", MODE_PRIVATE);
+                SharedPreferences prefs = getSharedPreferences("GalenaDigitalPrefs", MODE_PRIVATE);
                 long lastVersionCode = prefs.getLong("last_version_code", -1);
 
                 // If this is a newly installed APK version, purge WebView disk/memory cache immediately
                 // so the user never needs to install twice or suffer stale cached assets!
                 if (lastVersionCode != currentVersionCode) {
                     webView.clearCache(true);
+                    try {
+                        android.webkit.WebStorage.getInstance().deleteAllData();
+                    } catch (Exception ignored) {}
                     prefs.edit().putLong("last_version_code", currentVersionCode).apply();
                 }
             } catch (Exception e) {
@@ -64,6 +67,68 @@ public class MainActivity extends BridgeActivity {
                 webView.addJavascriptInterface(new InAppUpdater(this, webView), "AndroidAppUpdater");
             } catch (Exception e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private long lastBackPressTime = 0;
+
+    @Override
+    public boolean dispatchKeyEvent(android.view.KeyEvent event) {
+        if (event.getKeyCode() == android.view.KeyEvent.KEYCODE_BACK) {
+            if (event.getAction() == android.view.KeyEvent.ACTION_UP) {
+                handleBackButton();
+            }
+            return true; // Always consume KEYCODE_BACK so Capacitor does not prematurely close the app
+        }
+        return super.dispatchKeyEvent(event);
+    }
+
+    @Override
+    public void onBackPressed() {
+        handleBackButton();
+    }
+
+    private void handleBackButton() {
+        if (getBridge() != null && getBridge().getWebView() != null) {
+            WebView webView = getBridge().getWebView();
+            webView.evaluateJavascript(
+                "(function() { if (window.__onNativeBackPress) { return window.__onNativeBackPress(); } return false; })()",
+                value -> {
+                    // "true" means a modal window was open and is now closed (1 back press = close window)
+                    if (!"true".equals(value)) {
+                        // "false" means no modal was open -> require 2 presses to exit app
+                        runOnUiThread(() -> {
+                            long now = System.currentTimeMillis();
+                            if (now - lastBackPressTime < 2000) {
+                                finish();
+                            } else {
+                                lastBackPressTime = now;
+                                android.widget.Toast.makeText(
+                                    MainActivity.this,
+                                    "Presiona atrás de nuevo para salir",
+                                    android.widget.Toast.LENGTH_SHORT
+                                ).show();
+                                webView.evaluateJavascript(
+                                    "if (window.__showExitToast) window.__showExitToast();",
+                                    null
+                                );
+                            }
+                        });
+                    }
+                }
+            );
+        } else {
+            long now = System.currentTimeMillis();
+            if (now - lastBackPressTime < 2000) {
+                finish();
+            } else {
+                lastBackPressTime = now;
+                android.widget.Toast.makeText(
+                    MainActivity.this,
+                    "Presiona atrás de nuevo para salir",
+                    android.widget.Toast.LENGTH_SHORT
+                ).show();
             }
         }
     }

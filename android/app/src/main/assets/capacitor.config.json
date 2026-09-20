@@ -1,6 +1,6 @@
 {
 	"appId": "com.radiocristal.app",
-	"appName": "Radio Cristal HD",
+	"appName": "Galena Digital",
 	"webDir": "dist",
 	"server": {
 		"androidScheme": "https",
