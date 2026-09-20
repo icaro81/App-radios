@@ -7,6 +7,8 @@ import android.os.PowerManager;
 import android.view.WindowManager;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.ServiceWorkerController;
+import java.io.File;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -34,11 +36,18 @@ public class MainActivity extends BridgeActivity {
             e.printStackTrace();
         }
 
-        // 3. Configure WebView and force-clear stale cache on APK updates
+        // 3. Configure WebView and force-clear stale cache/service-workers on APK updates
         if (getBridge() != null && getBridge().getWebView() != null) {
             WebView webView = getBridge().getWebView();
             WebSettings settings = webView.getSettings();
             settings.setMediaPlaybackRequiresUserGesture(false);
+
+            // Prevent service worker caching entirely
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N) {
+                try {
+                    ServiceWorkerController.getInstance().getServiceWorkerWebSettings().setCacheMode(WebSettings.LOAD_NO_CACHE);
+                } catch (Exception ignored) {}
+            }
 
             try {
                 PackageInfo pInfo = getPackageManager().getPackageInfo(getPackageName(), 0);
@@ -49,13 +58,9 @@ public class MainActivity extends BridgeActivity {
                 SharedPreferences prefs = getSharedPreferences("GalenaDigitalPrefs", MODE_PRIVATE);
                 long lastVersionCode = prefs.getLong("last_version_code", -1);
 
-                // If this is a newly installed APK version, purge WebView disk/memory cache immediately
-                // so the user never needs to install twice or suffer stale cached assets!
+                // If this is a newly installed APK version, purge WebView disk/memory cache and service workers immediately
                 if (lastVersionCode != currentVersionCode) {
-                    webView.clearCache(true);
-                    try {
-                        android.webkit.WebStorage.getInstance().deleteAllData();
-                    } catch (Exception ignored) {}
+                    purgeWebViewStorage(webView);
                     prefs.edit().putLong("last_version_code", currentVersionCode).apply();
                 }
             } catch (Exception e) {
@@ -68,6 +73,43 @@ public class MainActivity extends BridgeActivity {
             } catch (Exception e) {
                 e.printStackTrace();
             }
+        }
+    }
+
+    private void purgeWebViewStorage(WebView webView) {
+        try {
+            webView.clearCache(true);
+            try {
+                android.webkit.WebStorage.getInstance().deleteAllData();
+            } catch (Exception ignored) {}
+
+            // Delete Service Worker and CacheStorage directories created by legacy PWA builds
+            File dataDir = getApplicationContext().getCacheDir().getParentFile();
+            if (dataDir != null) {
+                File webViewDir = new File(dataDir, "app_webview");
+                if (webViewDir.exists()) {
+                    deleteRecursively(new File(webViewDir, "Default/Service Worker"));
+                    deleteRecursively(new File(webViewDir, "Default/CacheStorage"));
+                    deleteRecursively(new File(webViewDir, "Service Worker"));
+                    deleteRecursively(new File(webViewDir, "CacheStorage"));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void deleteRecursively(File fileOrDir) {
+        if (fileOrDir != null && fileOrDir.exists()) {
+            if (fileOrDir.isDirectory()) {
+                File[] children = fileOrDir.listFiles();
+                if (children != null) {
+                    for (File child : children) {
+                        deleteRecursively(child);
+                    }
+                }
+            }
+            fileOrDir.delete();
         }
     }
 

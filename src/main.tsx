@@ -7,8 +7,14 @@ import './index.css';
 if (typeof window !== 'undefined') {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.getRegistrations().then((registrations) => {
+      let found = false;
       for (const registration of registrations) {
         registration.unregister();
+        found = true;
+      }
+      if (found && !sessionStorage.getItem('sw_purged')) {
+        sessionStorage.setItem('sw_purged', 'true');
+        window.location.reload();
       }
     }).catch(() => {});
   }

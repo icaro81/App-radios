@@ -194,6 +194,15 @@ public class InAppUpdater {
                 installIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                 installIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
                 installIntent.putExtra(Intent.EXTRA_NOT_UNKNOWN_SOURCE, true);
+
+                // Explicitly grant URI read permissions to all handling activities (fixes MIUI / Xiaomi installer blocking)
+                java.util.List<android.content.pm.ResolveInfo> resolveInfoList = activity.getPackageManager()
+                    .queryIntentActivities(installIntent, android.content.pm.PackageManager.MATCH_DEFAULT_ONLY);
+                for (android.content.pm.ResolveInfo resolveInfo : resolveInfoList) {
+                    String targetPackage = resolveInfo.activityInfo.packageName;
+                    activity.grantUriPermission(targetPackage, apkUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                }
+
                 activity.startActivity(installIntent);
 
             } catch (final Exception e) {
