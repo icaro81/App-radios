@@ -82,8 +82,10 @@ jobs:
           cd ..
           APK_NAME="Galena-Digital-v1.0.${{ github.run_number }}.apk"
           LEGACY_NAME="Radio-Cristal-v1.0.${{ github.run_number }}.apk"
+          LATEST_NAME="Galena-Digital.apk"
           cp android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/$APK_NAME"
           cp android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/$LEGACY_NAME"
+          cp android/app/build/outputs/apk/debug/app-debug.apk "android/app/build/outputs/apk/debug/$LATEST_NAME"
           ls -lh "android/app/build/outputs/apk/debug/$APK_NAME"
 
       - name: Upload APK Artifact
@@ -93,6 +95,31 @@ jobs:
           path: |
             android/app/build/outputs/apk/debug/Galena-Digital-v1.0.${{ github.run_number }}.apk
             android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
+            android/app/build/outputs/apk/debug/Galena-Digital.apk
+
+      - name: Prepare Dynamic Release Notes
+        id: release_notes
+        run: |
+          TAGLINE=$(node -e "try { console.log(require('./public/version.json').tagline || ''); } catch { console.log(''); }")
+          NOTES=$(node -e "try { console.log(require('./public/version.json').notes || ''); } catch { console.log(''); }")
+          {
+            echo "body<<EOF"
+            echo "### Galena Digital HD v1.0.${{ github.run_number }}"
+            if [ -n "$TAGLINE" ]; then
+              echo "**Reseña:** $TAGLINE"
+              echo ""
+            fi
+            echo "#### Novedades y cambios:"
+            if [ -n "$NOTES" ]; then
+              echo "$NOTES"
+            else
+              echo "- Mejoras continuas en reproducción de audio y soporte para TV Box."
+            fi
+            echo ""
+            echo "---"
+            echo "📱 **Instalación directa:** Descarga el APK adjunto para instalar directamente encima de tu versión actual sin desinstalar."
+            echo "EOF"
+          } >> $GITHUB_OUTPUT
 
       - name: Create or Update GitHub Release
         if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
@@ -100,13 +127,11 @@ jobs:
         with:
           tag_name: v1.0.${{ github.run_number }}
           name: Galena Digital HD v1.0.${{ github.run_number }}
-          body: |
-            ### Actualización de Galena Digital HD (Build ${{ github.run_number }})
-            - Esta versión se instala **directamente encima** de la versión previa en tu celular sin necesidad de desinstalar.
-            - Descarga el archivo `Galena-Digital-v1.0.${{ github.run_number }}.apk` adjunto para actualizar de inmediato.
+          body: ${{ steps.release_notes.outputs.body }}
           files: |
             android/app/build/outputs/apk/debug/Galena-Digital-v1.0.${{ github.run_number }}.apk
             android/app/build/outputs/apk/debug/Radio-Cristal-v1.0.${{ github.run_number }}.apk
+            android/app/build/outputs/apk/debug/Galena-Digital.apk
           draft: false
           prerelease: false
         env:

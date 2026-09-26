@@ -1,14 +1,16 @@
-import { APP_VERSION, APP_BUILD_CODE, DEFAULT_REPO } from '../version';
+import { APP_VERSION, DEFAULT_REPO, VERSION_HISTORY, LATEST_RELEASE, VersionRelease } from '../version';
 
 export interface UpdateInfo {
   hasUpdate: boolean;
   latestVersion: string;
   currentVersion: string;
   releaseTitle?: string;
+  releaseTagline?: string;
   releaseNotes?: string;
   downloadUrl?: string;
   publishedAt?: string;
   repoNotFound?: boolean;
+  versionHistory?: VersionRelease[];
 }
 
 // Compare semantic versions (e.g. '1.0.5' vs '1.0.4' or 'v1.0.12' vs 'v1.0.4')
@@ -63,15 +65,20 @@ export async function checkAppUpdate(customRepo?: string): Promise<UpdateInfo | 
         }
       }
 
+      // Check if remote version matches any version in history, else use latest
+      const matchedRelease = VERSION_HISTORY.find((v) => `v${v.version}` === tagName || v.version === tagName);
+
       return {
         hasUpdate: hasNewer,
         latestVersion: tagName || APP_VERSION,
         currentVersion: APP_VERSION,
-        releaseTitle: release.name || `Versión ${tagName}`,
-        releaseNotes: release.body || 'Nuevas mejoras de estabilidad y funciones añadidas.',
+        releaseTitle: release.name || `Versión ${tagName || APP_VERSION}`,
+        releaseTagline: matchedRelease?.tagline || release.name || LATEST_RELEASE.tagline,
+        releaseNotes: release.body || matchedRelease?.changes.join('\n') || LATEST_RELEASE.changes.join('\n'),
         downloadUrl,
         publishedAt: release.published_at,
         repoNotFound: false,
+        versionHistory: VERSION_HISTORY,
       };
     } else if (response.status === 404) {
       repoNotFound = true;
@@ -86,14 +93,18 @@ export async function checkAppUpdate(customRepo?: string): Promise<UpdateInfo | 
     if (localResp.ok) {
       const data = await localResp.json();
       const hasNewer = isVersionGreater(data.versionName, APP_VERSION);
+      const matchedRelease = VERSION_HISTORY.find((v) => v.version === data.versionName);
+
       return {
         hasUpdate: hasNewer,
         latestVersion: data.versionName,
         currentVersion: APP_VERSION,
-        releaseTitle: data.title,
-        releaseNotes: data.notes,
+        releaseTitle: data.title || `Galena Digital v${data.versionName}`,
+        releaseTagline: data.tagline || matchedRelease?.tagline || LATEST_RELEASE.tagline,
+        releaseNotes: data.notes || matchedRelease?.changes.join('\n') || LATEST_RELEASE.changes.join('\n'),
         downloadUrl: data.downloadUrl || undefined,
         repoNotFound,
+        versionHistory: VERSION_HISTORY,
       };
     }
   } catch {
@@ -104,6 +115,10 @@ export async function checkAppUpdate(customRepo?: string): Promise<UpdateInfo | 
     hasUpdate: false,
     latestVersion: APP_VERSION,
     currentVersion: APP_VERSION,
+    releaseTitle: `Galena Digital v${APP_VERSION}`,
+    releaseTagline: LATEST_RELEASE.tagline,
+    releaseNotes: LATEST_RELEASE.changes.join('\n'),
     repoNotFound,
+    versionHistory: VERSION_HISTORY,
   };
 }

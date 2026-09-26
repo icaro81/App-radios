@@ -7,13 +7,16 @@ interface AddStationModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddStation: (station: RadioStation) => void;
+  skin?: 'black' | 'galena';
 }
 
 export const AddStationModal = ({
   isOpen,
   onClose,
   onAddStation,
+  skin = 'black',
 }: AddStationModalProps) => {
+  const isGalena = skin === 'galena';
   const [name, setName] = useState('');
   const [streamUrl, setStreamUrl] = useState('');
   const [subtitle, setSubtitle] = useState('');
@@ -139,21 +142,33 @@ export const AddStationModal = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md p-4 animate-in fade-in duration-200">
-      <div className="w-full max-w-md rounded-3xl glass-surface border border-white/20 p-6 sm:p-7 text-white shadow-2xl relative overflow-hidden">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center ${
+      isGalena ? 'bg-cyan-950/70 backdrop-blur-md' : 'bg-black/80 backdrop-blur-md'
+    } p-4 animate-in fade-in duration-200`}>
+      <div className={`w-full max-w-md rounded-3xl glass-surface ${
+        isGalena
+          ? 'border border-white/50 text-black shadow-[0_25px_60px_rgba(8,51,68,0.5)]'
+          : 'border border-white/20 text-white shadow-2xl'
+      } p-6 sm:p-7 relative overflow-hidden`}>
         {/* Specular sheen */}
-        <div className="absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent pointer-events-none" />
+        <div className={`absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent ${
+          isGalena ? 'via-white/60' : 'via-cyan-400/60'
+        } to-transparent pointer-events-none`} />
         
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-cyan-500/20 flex items-center justify-center border border-cyan-400/30 text-cyan-400">
+            <div className={`w-10 h-10 rounded-2xl flex items-center justify-center border ${
+              isGalena
+                ? 'bg-black/10 border-black/20 text-black'
+                : 'bg-cyan-500/20 border-cyan-400/30 text-cyan-400'
+            }`}>
               <Radio className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-white tracking-wide">
+              <h2 className={`text-lg font-extrabold tracking-wide ${isGalena ? 'text-black' : 'text-white'}`}>
                 Agregar Nueva Radio
               </h2>
-              <p className="text-xs text-white">
+              <p className={`text-xs ${isGalena ? 'text-neutral-900 font-medium' : 'text-white'}`}>
                 Añade cualquier enlace de streaming MP3 o AAC
               </p>
             </div>
@@ -161,7 +176,11 @@ export const AddStationModal = ({
 
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white hover:text-cyan-300 transition-colors cursor-pointer"
+            className={`w-8 h-8 rounded-full flex items-center justify-center transition-colors cursor-pointer ${
+              isGalena
+                ? 'bg-black/10 hover:bg-black/20 text-black'
+                : 'bg-white/10 hover:bg-white/20 text-white hover:text-cyan-300'
+            }`}
           >
             <X className="w-4 h-4" />
           </button>
@@ -182,7 +201,7 @@ export const AddStationModal = ({
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-xs font-mono uppercase tracking-wider text-white mb-1.5 font-semibold">
+            <label className={`block text-xs font-mono uppercase tracking-wider mb-1.5 font-bold ${isGalena ? 'text-black' : 'text-white'}`}>
               Nombre de la Radio
             </label>
             <div className="relative">
@@ -199,7 +218,11 @@ export const AddStationModal = ({
                   if (error) setError(null);
                 }}
                 placeholder="Ej. Radio Impacto 94.5"
-                className="w-full bg-black/60 border border-white/20 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all"
+                className={`w-full rounded-xl px-3.5 py-2.5 text-sm transition-all focus:outline-none ${
+                  isGalena
+                    ? 'bg-white/80 border border-black/20 text-black placeholder-neutral-500 focus:border-black focus:ring-1 focus:ring-black'
+                    : 'bg-black/60 border border-white/20 text-white placeholder-neutral-400 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400'
+                }`}
                 autoFocus
               />
             </div>
@@ -207,7 +230,7 @@ export const AddStationModal = ({
 
           <div>
             <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-mono uppercase tracking-wider text-white font-semibold">
+              <label className={`block text-xs font-mono uppercase tracking-wider font-bold ${isGalena ? 'text-black' : 'text-white'}`}>
                 URL del Stream de Audio
               </label>
               <button
@@ -215,18 +238,22 @@ export const AddStationModal = ({
                 onClick={handlePasteClipboard}
                 className={`flex items-center gap-1 text-[11px] font-medium transition-colors cursor-pointer px-2 py-0.5 rounded-lg ${
                   pasteSuccess
-                    ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+                    ? isGalena
+                      ? 'bg-black text-cyan-300 border border-black font-bold'
+                      : 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+                    : isGalena
+                    ? 'text-black hover:bg-black/10 font-bold'
                     : 'text-cyan-400 hover:text-cyan-300 hover:bg-cyan-500/10'
                 }`}
               >
                 {pasteSuccess ? (
                   <>
-                    <Check className="w-3 h-3 text-cyan-300" />
+                    <Check className={`w-3 h-3 ${isGalena ? 'text-cyan-300' : 'text-cyan-300'}`} />
                     <span>¡Enlace pegado!</span>
                   </>
                 ) : (
                   <>
-                    <ClipboardPaste className="w-3 h-3 text-cyan-400" />
+                    <ClipboardPaste className={`w-3 h-3 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
                     <span>Pegar enlace</span>
                   </>
                 )}
@@ -258,15 +285,19 @@ export const AddStationModal = ({
                   }, 20);
                 }}
                 placeholder="https://servidor.com:8000/stream"
-                className="w-full bg-black/60 border border-white/20 rounded-xl pl-9 pr-3.5 py-2.5 text-sm text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400 transition-all font-mono"
+                className={`w-full rounded-xl pl-9 pr-3.5 py-2.5 text-sm transition-all font-mono focus:outline-none ${
+                  isGalena
+                    ? 'bg-white/80 border border-black/20 text-black placeholder-neutral-500 focus:border-black focus:ring-1 focus:ring-black'
+                    : 'bg-black/60 border border-white/20 text-white placeholder-neutral-400 focus:border-cyan-400 focus:ring-1 focus:ring-cyan-400'
+                }`}
               />
-              <LinkIcon className="w-4 h-4 text-cyan-400 absolute left-3 top-3 pointer-events-none" />
+              <LinkIcon className={`w-4 h-4 absolute left-3 top-3 pointer-events-none ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-white mb-1.5 font-semibold">
+              <label className={`block text-xs font-mono uppercase tracking-wider mb-1.5 font-bold ${isGalena ? 'text-black' : 'text-white'}`}>
                 Subtítulo (Opcional)
               </label>
               <input
@@ -276,12 +307,16 @@ export const AddStationModal = ({
                 onChange={(e) => setSubtitle(e.target.value)}
                 onInput={(e) => setSubtitle((e.target as HTMLInputElement).value)}
                 placeholder="Ej. 94.5 MHz FM"
-                className="w-full bg-black/60 border border-white/20 rounded-xl px-3 py-2 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 transition-all"
+                className={`w-full rounded-xl px-3 py-2 text-xs transition-all focus:outline-none ${
+                  isGalena
+                    ? 'bg-white/80 border border-black/20 text-black placeholder-neutral-500 focus:border-black'
+                    : 'bg-black/60 border border-white/20 text-white placeholder-neutral-400 focus:border-cyan-400'
+                }`}
               />
             </div>
 
             <div>
-              <label className="block text-xs font-mono uppercase tracking-wider text-white mb-1.5 font-semibold">
+              <label className={`block text-xs font-mono uppercase tracking-wider mb-1.5 font-bold ${isGalena ? 'text-black' : 'text-white'}`}>
                 Etiqueta / Badge
               </label>
               <div className="relative">
@@ -292,9 +327,13 @@ export const AddStationModal = ({
                   onChange={(e) => setBadge(e.target.value)}
                   onInput={(e) => setBadge((e.target as HTMLInputElement).value)}
                   placeholder="ONLINE / FM"
-                  className="w-full bg-black/60 border border-white/20 rounded-xl pl-8 pr-3 py-2 text-xs text-white placeholder-neutral-400 focus:outline-none focus:border-cyan-400 transition-all uppercase font-mono"
+                  className={`w-full rounded-xl pl-8 pr-3 py-2 text-xs uppercase font-mono transition-all focus:outline-none ${
+                    isGalena
+                      ? 'bg-white/80 border border-black/20 text-black placeholder-neutral-500 focus:border-black'
+                      : 'bg-black/60 border border-white/20 text-white placeholder-neutral-400 focus:border-cyan-400'
+                  }`}
                 />
-                <Tag className="w-3.5 h-3.5 text-cyan-400 absolute left-2.5 top-2.5 pointer-events-none" />
+                <Tag className={`w-3.5 h-3.5 absolute left-2.5 top-2.5 pointer-events-none ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
               </div>
             </div>
           </div>
@@ -303,13 +342,19 @@ export const AddStationModal = ({
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl text-xs font-medium text-white hover:text-cyan-300 transition-colors cursor-pointer"
+              className={`px-4 py-2 rounded-xl text-xs font-medium cursor-pointer transition-colors ${
+                isGalena ? 'text-black hover:text-neutral-700' : 'text-white hover:text-cyan-300'
+              }`}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-cyan-400 text-black text-xs font-bold shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:bg-cyan-300 transition-all cursor-pointer"
+              className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                isGalena
+                  ? 'bg-black text-cyan-300 shadow-[0_0_20px_rgba(0,0,0,0.35)] hover:bg-neutral-900'
+                  : 'bg-cyan-400 text-black shadow-[0_0_20px_rgba(6,182,212,0.5)] hover:bg-cyan-300'
+              }`}
             >
               <Plus className="w-4 h-4" />
               <span>Guardar Radio</span>

@@ -21,15 +21,44 @@ import {
   Sparkles,
   SlidersHorizontal
 } from 'lucide-react';
+import { SunMoonToggle } from './components/SunMoonToggle';
 
 export default function App() {
-  // Custom stations loaded from localStorage
+  // Skin state: 'black' (clásico negro cristal) vs 'galena' (celeste galena)
+  const [skin, setSkin] = useState<'black' | 'galena'>(() => {
+    try {
+      const saved = localStorage.getItem('radio_galena_skin');
+      if (saved === 'galena' || saved === 'black') return saved;
+    } catch {}
+    return 'black';
+  });
+
+  const toggleSkin = useCallback(() => {
+    setSkin((prev) => {
+      const next = prev === 'black' ? 'galena' : 'black';
+      try {
+        localStorage.setItem('radio_galena_skin', next);
+      } catch {}
+      return next;
+    });
+  }, []);
+
+  const isGalena = skin === 'galena';
+
+  // Custom stations loaded from localStorage, merging new default stations
   const [stations, setStations] = useState<RadioStation[]>(() => {
     try {
       const saved = localStorage.getItem('radio_cristal_stations');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) {
+          const existingUrls = new Set(parsed.map((s: RadioStation) => s.streamUrl));
+          const missingDefaults = RADIO_STATIONS.filter((s) => !existingUrls.has(s.streamUrl));
+          if (missingDefaults.length > 0) {
+            const merged = [...parsed, ...missingDefaults];
+            localStorage.setItem('radio_cristal_stations', JSON.stringify(merged));
+            return merged;
+          }
           return parsed;
         }
       }
@@ -204,15 +233,15 @@ export default function App() {
     try {
       setIsCheckingUpdate(true);
       const update = await checkAppUpdate();
-      if (update && update.hasUpdate) {
+      if (update) {
         setUpdateInfo(update);
+      }
+      if (isManual || update?.hasUpdate) {
         setIsUpdateModalOpen(true);
-      } else if (isManual) {
-        alert(`Galena Digital está al día (Versión ${APP_VERSION})`);
       }
     } catch {
       if (isManual) {
-        alert('No se pudo verificar la actualización en este momento.');
+        setIsUpdateModalOpen(true);
       }
     } finally {
       setIsCheckingUpdate(false);
@@ -699,7 +728,12 @@ export default function App() {
 
   return (
     <main
-      className={`relative w-full bg-[#050508] text-white flex flex-col justify-center items-center select-none font-sans ${
+      data-skin={skin}
+      className={`relative w-full ${
+        isGalena
+          ? 'bg-gradient-to-b from-[#22d3ee] via-[#06b6d4] to-[#0891b2] text-black'
+          : 'bg-[#050508] text-white'
+      } flex flex-col justify-center items-center select-none font-sans ${
         activeMode === 'tv'
           ? 'h-screen max-h-screen overflow-hidden p-2 sm:p-3'
           : 'h-[100dvh] max-h-[100dvh] overflow-hidden pt-[max(0.5rem,env(safe-area-inset-top))] pb-[max(0.5rem,env(safe-area-inset-bottom))] px-[max(0.75rem,env(safe-area-inset-left))]'
@@ -707,8 +741,26 @@ export default function App() {
     >
       {/* Background Radial Glow */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent rounded-full blur-3xl" />
+        <div
+          className={`absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-3xl ${
+            isGalena
+              ? 'bg-gradient-to-b from-white/35 via-white/10 to-transparent'
+              : 'bg-gradient-to-b from-white/[0.04] via-white/[0.01] to-transparent'
+          }`}
+        />
       </div>
+
+      {/* Intuitive Sun/Moon Skin Switcher: Luna 🌙 (Negro Cristal) | Sol ☀️ (Celeste Galena) */}
+      <SunMoonToggle
+        skin={skin}
+        onToggle={toggleSkin}
+        onSelectSkin={(newSkin) => {
+          setSkin(newSkin);
+          try {
+            localStorage.setItem('radio_galena_skin', newSkin);
+          } catch {}
+        }}
+      />
 
       {activeMode === 'tv' ? (
         /* Android TV / Tablet Landscape View with D-Pad focus */
@@ -738,6 +790,7 @@ export default function App() {
             onOpenEqualizer={() => setIsEqOpen(true)}
             isCheckingUpdate={isCheckingUpdate}
             isLandscape={isLandscape}
+            skin={skin}
           />
         </div>
       ) : (
@@ -746,27 +799,41 @@ export default function App() {
           {/* Central Crystal Radio Player Console */}
           <section
             id="crystal-player-console"
-            className="relative w-full glass-surface rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-5 overflow-hidden border border-white/15 transition-all duration-300 shadow-2xl flex flex-col justify-between"
+            className={`relative w-full glass-surface rounded-[24px] sm:rounded-[28px] p-3.5 sm:p-5 overflow-hidden border ${
+              isGalena ? 'border-white/40 shadow-[0_30px_70px_-10px_rgba(8,51,68,0.45)]' : 'border-white/15 shadow-2xl'
+            } transition-all duration-300 flex flex-col justify-between`}
           >
             {/* Specular Diagonal Reflection Light */}
-            <div className="absolute -top-24 -left-24 w-[160%] h-48 bg-gradient-to-b from-white/18 via-white/4 to-transparent rotate-[-25deg] pointer-events-none filter blur-[0.5px]" />
+            <div className={`absolute -top-24 -left-24 w-[160%] h-48 ${
+              isGalena
+                ? 'bg-gradient-to-b from-white/30 via-white/10 to-transparent'
+                : 'bg-gradient-to-b from-white/18 via-white/4 to-transparent'
+            } rotate-[-25deg] pointer-events-none filter blur-[0.5px]`} />
             <div className="absolute top-0 inset-x-8 h-[1px] bg-gradient-to-r from-transparent via-white/50 to-transparent" />
 
             {/* OLED Display Section */}
-            <div className="relative rounded-2xl bg-black/60 border border-white/10 p-3 sm:p-4 mb-2 overflow-hidden shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]">
+            <div className={`relative rounded-2xl ${
+              isGalena
+                ? 'bg-white/40 border-black/15 shadow-[inset_0_2px_8px_rgba(8,51,68,0.15)]'
+                : 'bg-black/60 border-white/10 shadow-[inset_0_2px_8px_rgba(0,0,0,0.8)]'
+            } border p-3 sm:p-4 mb-2 overflow-hidden`}>
               {/* Status Bar */}
               <div className="flex items-center justify-between mb-1.5">
                 <div className="flex items-center gap-2">
                   <span
                     className={`w-2 h-2 rounded-full transition-colors duration-300 ${
                       isPlaying
-                        ? 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]'
+                        ? isGalena
+                          ? 'bg-black shadow-[0_0_8px_rgba(0,0,0,0.6)]'
+                          : 'bg-cyan-400 shadow-[0_0_10px_#22d3ee]'
                         : isLoading
                         ? 'bg-amber-400 shadow-[0_0_8px_#fbbf24] animate-ping'
+                        : isGalena
+                        ? 'bg-neutral-800'
                         : 'bg-neutral-600'
                     }`}
                   />
-                  <span className="text-[11px] font-mono tracking-wider uppercase text-white font-medium">
+                  <span className={`text-[11px] font-mono tracking-wider uppercase font-semibold ${isGalena ? 'text-black' : 'text-white'}`}>
                     {isPlaying ? 'EN DIRECTO' : isLoading ? 'CONECTANDO...' : 'PAUSADO'}
                   </span>
                 </div>
@@ -775,13 +842,21 @@ export default function App() {
                   <button
                     id="mobile-eq-btn"
                     onClick={() => setIsEqOpen(true)}
-                    className="flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-400/30 text-cyan-400 transition-all cursor-pointer active:scale-95"
+                    className={`flex items-center gap-1 text-[10px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-full border transition-all cursor-pointer active:scale-95 ${
+                      isGalena
+                        ? 'bg-black/10 hover:bg-black/20 border-black/30 text-black'
+                        : 'bg-cyan-500/10 hover:bg-cyan-500/20 border-cyan-400/30 text-cyan-400'
+                    }`}
                     title="Abrir ecualizador de 4 bandas"
                   >
-                    <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
+                    <SlidersHorizontal className={`w-3 h-3 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
                     <span>EQ 4-BANDAS</span>
                   </button>
-                  <div className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full bg-white/5 border border-white/10 text-white font-medium">
+                  <div className={`text-[10px] font-mono uppercase tracking-widest px-2.5 py-0.5 rounded-full border font-semibold ${
+                    isGalena
+                      ? 'bg-black/10 border-black/20 text-black'
+                      : 'bg-white/5 border-white/10 text-white'
+                  }`}>
                     {currentStation.badge || 'ESTÉREO HD'}
                   </div>
                 </div>
@@ -789,7 +864,11 @@ export default function App() {
 
               {/* Custom Studio Microphone & Headphones Emblem */}
               <div className="flex justify-center my-0.5">
-                <div className="relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl p-1 bg-gradient-to-b from-white/10 to-white/5 border border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.7)] flex items-center justify-center overflow-hidden">
+                <div className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-2xl p-1 ${
+                  isGalena
+                    ? 'bg-gradient-to-b from-white/40 to-white/15 border-white/40 shadow-[0_4px_16px_rgba(8,51,68,0.2)]'
+                    : 'bg-gradient-to-b from-white/10 to-white/5 border-white/15 shadow-[0_4px_16px_rgba(0,0,0,0.7)]'
+                } border flex items-center justify-center overflow-hidden`}>
                   <div className="absolute inset-0 bg-white/5 rounded-2xl blur-[1px]" />
                   <img
                     src="/icon.svg"
@@ -801,17 +880,21 @@ export default function App() {
 
               {/* Station Title */}
               <div className="text-center my-0.5">
-                <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]">
+                <h1 className={`text-xl sm:text-2xl font-bold tracking-tight ${
+                  isGalena
+                    ? 'text-black drop-shadow-[0_1px_2px_rgba(255,255,255,0.4)]'
+                    : 'text-white drop-shadow-[0_2px_10px_rgba(255,255,255,0.2)]'
+                }`}>
                   {currentStation.name}
                 </h1>
-                <p className="text-[11px] text-white font-normal tracking-wide">
+                <p className={`text-[11px] font-medium tracking-wide ${isGalena ? 'text-neutral-900' : 'text-white'}`}>
                   {currentStation.subtitle || 'Transmisión Online'}
                 </p>
               </div>
 
               {/* Fluid Zero-Lag Canvas Sound Visualizer */}
               <div className="mt-1">
-                <Visualizer isPlaying={isPlaying} isLoading={isLoading} analyser={analyser} />
+                <Visualizer isPlaying={isPlaying} isLoading={isLoading} analyser={analyser} skin={skin} />
               </div>
 
               {/* Error Notice */}
@@ -830,7 +913,11 @@ export default function App() {
                 id="prev-station-btn"
                 onClick={prevStation}
                 title="Estación anterior"
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border border-white/10 flex items-center justify-center text-white hover:text-cyan-300 transition-transform active:scale-90 cursor-pointer shadow-lg hover:border-cyan-400/30"
+                className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border flex items-center justify-center transition-transform active:scale-90 cursor-pointer shadow-lg ${
+                  isGalena
+                    ? 'border-black/20 text-black hover:text-neutral-900 hover:border-black/40'
+                    : 'border-white/10 text-white hover:text-cyan-300 hover:border-cyan-400/30'
+                }`}
               >
                 <RotateCw className="w-4 h-4 -scale-x-100" />
               </button>
@@ -840,7 +927,9 @@ export default function App() {
                 <div
                   className={`absolute -inset-2 rounded-full transition-all duration-300 ${
                     isPlaying
-                      ? 'bg-cyan-400/20 blur-md group-hover:bg-cyan-400/30'
+                      ? isGalena
+                        ? 'bg-black/20 blur-md group-hover:bg-black/30'
+                        : 'bg-cyan-400/20 blur-md group-hover:bg-cyan-400/30'
                       : 'bg-transparent blur-none'
                   }`}
                 />
@@ -851,7 +940,11 @@ export default function App() {
                   aria-label={isPlaying ? 'Pausar transmisión' : 'Reproducir transmisión'}
                   className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center transition-all duration-200 ease-out cursor-pointer active:scale-95 ${
                     isPlaying
-                      ? 'bg-cyan-400 text-black shadow-[0_0_25px_rgba(6,182,212,0.6)] border-2 border-cyan-300'
+                      ? isGalena
+                        ? 'bg-black text-cyan-300 shadow-[0_0_25px_rgba(0,0,0,0.5)] border-2 border-neutral-900'
+                        : 'bg-cyan-400 text-black shadow-[0_0_25px_rgba(6,182,212,0.6)] border-2 border-cyan-300'
+                      : isGalena
+                      ? 'glass-button-active text-black border-2 border-black/40 hover:border-black shadow-[0_8px_25px_rgba(8,51,68,0.25)]'
                       : 'glass-button-active text-white border-2 border-cyan-400/40 hover:border-cyan-400 shadow-[0_8px_25px_rgba(0,0,0,0.8)]'
                   }`}
                 >
@@ -870,7 +963,11 @@ export default function App() {
                 id="next-station-btn"
                 onClick={nextStation}
                 title="Siguiente estación"
-                className="w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border border-white/10 flex items-center justify-center text-white hover:text-cyan-300 transition-transform active:scale-90 cursor-pointer shadow-lg hover:border-cyan-400/30"
+                className={`w-11 h-11 sm:w-12 sm:h-12 rounded-full glass-button border flex items-center justify-center transition-transform active:scale-90 cursor-pointer shadow-lg ${
+                  isGalena
+                    ? 'border-black/20 text-black hover:text-neutral-900 hover:border-black/40'
+                    : 'border-white/10 text-white hover:text-cyan-300 hover:border-cyan-400/30'
+                }`}
               >
                 <RotateCw className="w-4 h-4" />
               </button>
@@ -878,17 +975,19 @@ export default function App() {
 
             {/* Volume Slider */}
             <div className="my-1 sm:my-1.5 px-1">
-              <div className="flex items-center gap-3 bg-black/40 rounded-2xl p-2 sm:p-2.5 border border-white/5">
+              <div className={`flex items-center gap-3 rounded-2xl p-2 sm:p-2.5 border ${
+                isGalena ? 'bg-black/10 border-black/15' : 'bg-black/40 border-white/5'
+              }`}>
                 <button
                   id="toggle-mute-btn"
                   onClick={toggleMute}
-                  className="text-white hover:text-cyan-300 transition-colors cursor-pointer"
+                  className={`${isGalena ? 'text-black hover:text-neutral-800' : 'text-white hover:text-cyan-300'} transition-colors cursor-pointer`}
                   title={isMuted ? 'Activar sonido' : 'Silenciar'}
                 >
                   {isMuted || volume === 0 ? (
-                    <VolumeX className="w-4 h-4 text-white" />
+                    <VolumeX className="w-4 h-4" />
                   ) : (
-                    <Volume2 className="w-4 h-4 text-white" />
+                    <Volume2 className="w-4 h-4" />
                   )}
                 </button>
 
@@ -903,17 +1002,19 @@ export default function App() {
                     setVolume(parseFloat(e.target.value));
                     if (isMuted) setIsMuted(false);
                   }}
-                  className="w-full h-1.5 bg-neutral-800 rounded-lg appearance-none cursor-pointer accent-cyan-400"
+                  className={`w-full h-1.5 ${
+                    isGalena ? 'bg-cyan-950/20 accent-black' : 'bg-neutral-800 accent-cyan-400'
+                  } rounded-lg appearance-none cursor-pointer`}
                 />
 
-                <span className="text-[10px] font-mono text-white w-8 text-right font-semibold">
+                <span className={`text-[10px] font-mono w-8 text-right font-semibold ${isGalena ? 'text-black' : 'text-white'}`}>
                   {isMuted ? '0%' : `${Math.round(volume * 100)}%`}
                 </span>
               </div>
             </div>
 
             {/* 2x2 Swipeable Stations Grid */}
-            <div className="mt-2 pt-2 border-t border-white/5">
+            <div className={`mt-2 pt-2 border-t ${isGalena ? 'border-black/10' : 'border-white/5'}`}>
               <StationGrid
                 stations={stations}
                 currentStation={currentStation}
@@ -921,29 +1022,36 @@ export default function App() {
                 onSelectStation={playStation}
                 onRemoveStation={handleRemoveStation}
                 onOpenAddModal={() => setIsAddModalOpen(true)}
+                skin={skin}
               />
             </div>
 
             {/* App Version & In-App Update Trigger */}
-            <div className="mt-2 pt-2 border-t border-white/10 flex items-center justify-between px-1 text-[10px] font-mono text-white">
-              <span>Galena Digital v{APP_VERSION}</span>
+            <div className={`mt-2 pt-2 border-t ${
+              isGalena ? 'border-black/15 text-black' : 'border-white/10 text-white'
+            } flex items-center justify-between px-1 text-[10px] font-mono`}>
+              <span className="font-semibold">Galena Digital v{APP_VERSION}</span>
               <div className="flex items-center gap-3">
                 <button
                   id="footer-eq-btn"
                   onClick={() => setIsEqOpen(true)}
-                  className="flex items-center gap-1 text-white hover:text-cyan-300 transition-colors cursor-pointer"
+                  className={`flex items-center gap-1 ${
+                    isGalena ? 'text-black hover:text-neutral-800' : 'text-white hover:text-cyan-300'
+                  } transition-colors cursor-pointer`}
                   title="Ecualizador de audio de 4 bandas"
                 >
-                  <SlidersHorizontal className="w-3 h-3 text-cyan-400" />
+                  <SlidersHorizontal className={`w-3 h-3 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
                   <span>Ecualizador</span>
                 </button>
                 <button
                   id="check-updates-btn"
                   onClick={() => performUpdateCheck(true)}
-                  className="flex items-center gap-1 text-white hover:text-cyan-300 transition-colors cursor-pointer"
+                  className={`flex items-center gap-1 ${
+                    isGalena ? 'text-black hover:text-neutral-800' : 'text-white hover:text-cyan-300'
+                  } transition-colors cursor-pointer`}
                   title="Buscar actualizaciones"
                 >
-                  <Sparkles className="w-3 h-3 text-cyan-400" />
+                  <Sparkles className={`w-3 h-3 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
                   <span>{isCheckingUpdate ? 'Comprobando...' : 'Actualizar'}</span>
                 </button>
               </div>
@@ -960,6 +1068,7 @@ export default function App() {
         onChangeBand={handleEqChangeBand}
         onReset={handleEqReset}
         onApplyPreset={handleEqPreset}
+        skin={skin}
       />
 
       {/* Add Custom Station Modal */}
@@ -974,6 +1083,9 @@ export default function App() {
         isOpen={isUpdateModalOpen}
         updateInfo={updateInfo}
         onClose={() => setIsUpdateModalOpen(false)}
+        onCheckAgain={() => performUpdateCheck(true)}
+        isChecking={isCheckingUpdate}
+        skin={skin}
       />
 
       {/* Hidden Audio Element with CORS Enabled for Web Audio Analyser */}

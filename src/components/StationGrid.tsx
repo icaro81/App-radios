@@ -9,6 +9,7 @@ interface StationGridProps {
   onSelectStation: (station: RadioStation) => void;
   onRemoveStation: (id: string) => void;
   onOpenAddModal: () => void;
+  skin?: 'black' | 'galena';
 }
 
 type GridSlot =
@@ -22,9 +23,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
   onSelectStation,
   onRemoveStation,
   onOpenAddModal,
+  skin = 'black',
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [currentPage, setCurrentPage] = useState<number>(0);
+  const isGalena = skin === 'galena';
 
   // Calculate 2x2 pages with dynamic add-slots
   const pages: GridSlot[][] = React.useMemo(() => {
@@ -88,11 +91,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
       {/* Header bar of the stations section */}
       <div className="flex items-center justify-between mb-2 px-1">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold tracking-widest uppercase text-white">
+          <span className={`text-[11px] font-semibold tracking-widest uppercase ${isGalena ? 'text-black font-bold' : 'text-white'}`}>
             SINTONÍAS DISPONIBLES
           </span>
           {pages.length > 1 && (
-            <span className="text-[10px] font-mono text-white">
+            <span className={`text-[10px] font-mono ${isGalena ? 'text-black/80 font-bold' : 'text-white'}`}>
               ({currentPage + 1}/{pages.length})
             </span>
           )}
@@ -104,7 +107,9 @@ export const StationGrid: React.FC<StationGridProps> = ({
             <button
               onClick={() => scrollToPage(Math.max(0, currentPage - 1))}
               disabled={currentPage === 0}
-              className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-white transition-all cursor-pointer"
+              className={`w-6 h-6 rounded-lg ${
+                isGalena ? 'bg-black/10 hover:bg-black/20 text-black' : 'bg-white/10 hover:bg-white/20 text-white'
+              } disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer`}
               title="Página anterior"
             >
               <ChevronLeft className="w-3.5 h-3.5" />
@@ -112,7 +117,9 @@ export const StationGrid: React.FC<StationGridProps> = ({
             <button
               onClick={() => scrollToPage(Math.min(pages.length - 1, currentPage + 1))}
               disabled={currentPage === pages.length - 1}
-              className="w-6 h-6 rounded-lg bg-white/10 hover:bg-white/20 disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center text-white transition-all cursor-pointer"
+              className={`w-6 h-6 rounded-lg ${
+                isGalena ? 'bg-black/10 hover:bg-black/20 text-black' : 'bg-white/10 hover:bg-white/20 text-white'
+              } disabled:opacity-30 disabled:pointer-events-none flex items-center justify-center transition-all cursor-pointer`}
               title="Página siguiente"
             >
               <ChevronRight className="w-3.5 h-3.5" />
@@ -147,7 +154,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
                       onClick={() => onSelectStation(station)}
                       className={`relative w-full h-[56px] sm:h-[62px] text-left rounded-xl sm:rounded-2xl p-2 sm:p-2.5 transition-all duration-200 ease-out overflow-hidden select-none cursor-pointer flex items-center gap-2 sm:gap-2.5 ${
                         isActive
-                          ? 'glass-button-active border border-cyan-400/80 text-white shadow-[0_0_15px_rgba(6,182,212,0.35)]'
+                          ? isGalena
+                            ? 'glass-button-active border border-black text-black shadow-[0_0_15px_rgba(0,0,0,0.25)]'
+                            : 'glass-button-active border border-cyan-400/80 text-white shadow-[0_0_15px_rgba(6,182,212,0.35)]'
+                          : isGalena
+                          ? 'glass-button border border-black/15 text-black hover:border-black/40'
                           : 'glass-button border border-white/10 text-white hover:border-cyan-400/30'
                       }`}
                     >
@@ -155,31 +166,37 @@ export const StationGrid: React.FC<StationGridProps> = ({
                       <div className="absolute inset-0 pointer-events-none glass-sheen opacity-60 group-hover/card:opacity-100 transition-opacity duration-300" />
                       
                       {/* Top highlight border line */}
-                      <div className="absolute top-0 left-0 right-0 h-[1px] bg-gradient-to-r from-transparent via-white/30 to-transparent pointer-events-none" />
+                      <div className={`absolute top-0 left-0 right-0 h-[1px] ${
+                        isGalena ? 'bg-gradient-to-r from-transparent via-white/50 to-transparent' : 'bg-gradient-to-r from-transparent via-white/30 to-transparent'
+                      } pointer-events-none`} />
 
                       {/* Icon Container */}
                       <div
                         className={`flex-shrink-0 w-8 h-8 rounded-lg sm:rounded-xl flex items-center justify-center transition-all ${
                           isActive
-                            ? 'bg-cyan-400 text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]'
+                            ? isGalena
+                              ? 'bg-black text-cyan-300 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
+                              : 'bg-cyan-400 text-black shadow-[0_0_10px_rgba(6,182,212,0.6)]'
+                            : isGalena
+                            ? 'bg-black/10 text-black group-hover/card:bg-black/15 border border-black/10'
                             : 'bg-white/5 text-white group-hover/card:bg-white/10 border border-white/5'
                         }`}
                       >
                         {isLoadingThis ? (
-                          <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                          <Loader2 className={`w-3.5 h-3.5 animate-spin ${isGalena ? 'text-black' : 'text-white'}`} />
                         ) : isPlayingThis ? (
-                          <Signal className="w-3.5 h-3.5 animate-pulse text-black" />
+                          <Signal className={`w-3.5 h-3.5 animate-pulse ${isGalena ? 'text-cyan-300' : 'text-black'}`} />
                         ) : (
-                          <Radio className="w-3.5 h-3.5 text-white" />
+                          <Radio className={`w-3.5 h-3.5 ${isGalena ? 'text-black' : 'text-white'}`} />
                         )}
                       </div>
 
                       {/* Text details */}
                       <div className="min-w-0 flex-1">
-                        <span className="block font-semibold text-xs sm:text-sm tracking-tight truncate text-white leading-tight">
+                        <span className={`block font-semibold text-xs sm:text-sm tracking-tight truncate leading-tight ${isGalena ? 'text-black' : 'text-white'}`}>
                           {station.name}
                         </span>
-                        <span className="block text-[10px] text-white truncate mt-0.5 font-mono">
+                        <span className={`block text-[10px] truncate mt-0.5 font-mono ${isGalena ? 'text-neutral-900 font-medium' : 'text-white'}`}>
                           {isLoadingThis
                             ? 'Conectando...'
                             : isPlayingThis
@@ -190,7 +207,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
 
                       {/* Active indicator bar at the bottom */}
                       {isActive && (
-                        <div className="absolute bottom-0 left-2 right-2 h-[2px] bg-gradient-to-r from-transparent via-cyan-400 to-transparent" />
+                        <div className={`absolute bottom-0 left-2 right-2 h-[2px] ${
+                          isGalena
+                            ? 'bg-gradient-to-r from-transparent via-black to-transparent'
+                            : 'bg-gradient-to-r from-transparent via-cyan-400 to-transparent'
+                        }`} />
                       )}
                     </button>
 
@@ -216,17 +237,25 @@ export const StationGrid: React.FC<StationGridProps> = ({
                 <button
                   key={slot.id}
                   onClick={onOpenAddModal}
-                  className="relative w-full h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border border-dashed border-white/20 hover:border-cyan-400/60 bg-white/[0.02] hover:bg-cyan-500/10 transition-all duration-200 p-2 sm:p-2.5 flex items-center justify-center gap-2 cursor-pointer group/add select-none"
+                  className={`relative w-full h-[56px] sm:h-[62px] rounded-xl sm:rounded-2xl border border-dashed transition-all duration-200 p-2 sm:p-2.5 flex items-center justify-center gap-2 cursor-pointer group/add select-none ${
+                    isGalena
+                      ? 'border-black/30 hover:border-black/70 bg-black/[0.04] hover:bg-black/[0.08] text-black'
+                      : 'border-white/20 hover:border-cyan-400/60 bg-white/[0.02] hover:bg-cyan-500/10 text-white'
+                  }`}
                   title="Agregar nueva transmisión"
                 >
-                  <div className="w-8 h-8 rounded-lg sm:rounded-xl bg-white/5 border border-white/10 group-hover/add:border-cyan-400/40 group-hover/add:bg-cyan-500/20 flex items-center justify-center text-white group-hover/add:text-cyan-300 transition-colors">
+                  <div className={`w-8 h-8 rounded-lg sm:rounded-xl border flex items-center justify-center transition-colors ${
+                    isGalena
+                      ? 'bg-black/10 border-black/15 text-black group-hover/add:bg-black/20'
+                      : 'bg-white/5 border-white/10 group-hover/add:border-cyan-400/40 group-hover/add:bg-cyan-500/20 text-white group-hover/add:text-cyan-300'
+                  }`}>
                     <Plus className="w-3.5 h-3.5" />
                   </div>
                   <div className="text-left min-w-0">
-                    <span className="block text-xs font-medium text-white truncate">
+                    <span className={`block text-xs font-medium truncate ${isGalena ? 'text-black' : 'text-white'}`}>
                       Agregar radio
                     </span>
-                    <span className="block text-[9px] font-mono text-white group-hover/add:text-cyan-300 truncate">
+                    <span className={`block text-[9px] font-mono truncate ${isGalena ? 'text-neutral-900 group-hover/add:text-black font-semibold' : 'text-white group-hover/add:text-cyan-300'}`}>
                       + Nueva URL
                     </span>
                   </div>
@@ -246,7 +275,11 @@ export const StationGrid: React.FC<StationGridProps> = ({
               onClick={() => scrollToPage(dotIndex)}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
                 currentPage === dotIndex
-                  ? 'w-5 bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
+                  ? isGalena
+                    ? 'w-5 bg-black'
+                    : 'w-5 bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
+                  : isGalena
+                  ? 'w-1.5 bg-black/25 hover:bg-black/40'
                   : 'w-1.5 bg-white/20 hover:bg-white/40'
               }`}
               title={`Ir a página ${dotIndex + 1}`}

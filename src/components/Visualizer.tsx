@@ -4,6 +4,7 @@ interface VisualizerProps {
   isPlaying: boolean;
   isLoading: boolean;
   analyser?: AnalyserNode | null;
+  skin?: 'black' | 'galena';
 }
 
 // 4 Real Frequency Ranges sampled from the AnalyserNode
@@ -14,9 +15,14 @@ const REAL_AUDIO_RANGES = [
   { name: 'Agudo', start: 26, end: 58, gain: 1.85 },        // Real 3 -> Placed at Slot 6
 ];
 
-export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) => {
+export const Visualizer = ({ isPlaying, isLoading, analyser, skin = 'black' }: VisualizerProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const regionBadgeRef = useRef<HTMLSpanElement | null>(null);
+  const skinRef = useRef<'black' | 'galena'>(skin);
+
+  useEffect(() => {
+    skinRef.current = skin;
+  }, [skin]);
 
   // References for zero-allocation 60fps loop
   const animFrameRef = useRef<number | null>(null);
@@ -48,24 +54,35 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
       const barWidth = 14;
       const spacing = (width - numBars * barWidth) / (numBars + 1);
       const maxHeight = height - 10; // leave top room for peak line
+      const currentSkin = skinRef.current;
 
       for (let i = 0; i < numBars; i++) {
-        const x = spacing + i * (barWidth + spacing);
-        const barH = Math.max(3, (bars[i] / 100) * maxHeight);
-        const y = height - barH - 2;
+        const x = Math.round(spacing + i * (barWidth + spacing));
+        const barH = Math.max(3, Math.round((bars[i] / 100) * maxHeight));
+        const y = Math.round(height - barH - 2);
 
         // Draw Bar
         if (isLive) {
-          // Pre-calculated digital circuit cyan gradient for active playback
-          const grad = ctx.createLinearGradient(0, height, 0, 0);
-          grad.addColorStop(0, '#0e7490');
-          grad.addColorStop(0.4, '#06b6d4');
-          grad.addColorStop(0.75, '#22d3ee');
-          grad.addColorStop(0.92, '#67e8f9');
-          grad.addColorStop(1.0, '#cffafe');
-          ctx.fillStyle = grad;
+          if (currentSkin === 'galena') {
+            // Obsidian charcoal & deep steel crystal gradient with crisp definition
+            const grad = ctx.createLinearGradient(0, y + barH, 0, y);
+            grad.addColorStop(0, '#000000');
+            grad.addColorStop(0.45, '#0f172a');
+            grad.addColorStop(0.8, '#1e293b');
+            grad.addColorStop(1.0, '#334155');
+            ctx.fillStyle = grad;
+          } else {
+            // Pre-calculated digital circuit cyan gradient for active playback
+            const grad = ctx.createLinearGradient(0, height, 0, 0);
+            grad.addColorStop(0, '#0e7490');
+            grad.addColorStop(0.4, '#06b6d4');
+            grad.addColorStop(0.75, '#22d3ee');
+            grad.addColorStop(0.92, '#67e8f9');
+            grad.addColorStop(1.0, '#cffafe');
+            ctx.fillStyle = grad;
+          }
         } else {
-          ctx.fillStyle = 'rgba(6, 182, 212, 0.2)';
+          ctx.fillStyle = currentSkin === 'galena' ? 'rgba(0, 0, 0, 0.16)' : 'rgba(6, 182, 212, 0.2)';
         }
 
         // Rounded bar top
@@ -77,11 +94,21 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
           ctx.fillRect(x, y, barWidth, barH);
         }
 
+        // Subtle specular highlight on top edge for crystal glass effect in galena skin
+        if (isLive && currentSkin === 'galena' && barH > 5) {
+          ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.fillRect(x + 1, y, barWidth - 2, 1);
+        }
+
         // Draw Peak indicator
         if (isLive) {
           const peakH = Math.max(barH, (peaks[i] / 100) * maxHeight);
-          const peakY = Math.max(1, height - peakH - 4);
-          ctx.fillStyle = peakH > 78 ? '#ffffff' : peakH > 52 ? '#67e8f9' : '#06b6d4';
+          const peakY = Math.round(Math.max(1, height - peakH - 4));
+          if (currentSkin === 'galena') {
+            ctx.fillStyle = '#000000';
+          } else {
+            ctx.fillStyle = peakH > 78 ? '#ffffff' : peakH > 52 ? '#67e8f9' : '#06b6d4';
+          }
           ctx.fillRect(x, peakY, barWidth, 2);
         }
       }
@@ -91,6 +118,7 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
       const dt = Math.min((timestamp - lastUpdate) / 1000, 0.1);
       lastUpdate = timestamp;
       beatClockRef.current += dt;
+      const currentSkin = skinRef.current;
 
       if (!isPlaying) {
         // Idle state
@@ -100,7 +128,9 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
         if (regionBadgeRef.current && currentRegionRef.current !== 'BALANCE') {
           currentRegionRef.current = 'BALANCE';
           regionBadgeRef.current.textContent = 'BALANCE';
-          regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20';
+          regionBadgeRef.current.className = currentSkin === 'galena'
+            ? 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-black/15 text-black border border-black/25'
+            : 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20';
         }
         return;
       }
@@ -181,14 +211,26 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
             if (newRegion !== currentRegionRef.current) {
               currentRegionRef.current = newRegion;
               regionBadgeRef.current.textContent = newRegion;
-              if (newRegion === 'BASS') {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-500/25 text-cyan-300 border border-cyan-400/50';
-              } else if (newRegion === 'MID') {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-400/30 text-cyan-200 border border-cyan-300/60';
-              } else if (newRegion === 'TREBLE') {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-300/35 text-white border border-cyan-200/70';
+              if (currentSkin === 'galena') {
+                if (newRegion === 'BASS') {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-black text-white border border-black shadow-sm';
+                } else if (newRegion === 'MID') {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-black/85 text-white border border-black/90 shadow-sm';
+                } else if (newRegion === 'TREBLE') {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-black/90 text-white border border-black shadow-sm';
+                } else {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-black/15 text-black border border-black/25';
+                }
               } else {
-                regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20';
+                if (newRegion === 'BASS') {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-500/25 text-cyan-300 border border-cyan-400/50';
+                } else if (newRegion === 'MID') {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-400/30 text-cyan-200 border border-cyan-300/60';
+                } else if (newRegion === 'TREBLE') {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-cyan-300/35 text-white border border-cyan-200/70';
+                } else {
+                  regionBadgeRef.current.className = 'px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20';
+                }
               }
             }
           }
@@ -244,25 +286,29 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
         cancelAnimationFrame(animFrameRef.current);
       }
     };
-  }, [isPlaying, analyser]);
+  }, [isPlaying, analyser, skin]);
+
+  const isGalena = skin === 'galena';
 
   return (
     <div id="audio-visualizer-container" className="flex flex-col items-center justify-center py-1 w-full select-none">
       {/* Top Frequency Region & Band Indicator */}
-      <div className="flex items-center justify-between w-full max-w-xs sm:max-w-sm px-2 mb-1 text-[10px] font-mono">
+      <div className={`flex items-center justify-between w-full max-w-xs sm:max-w-sm px-2 mb-1 text-[10px] font-mono ${isGalena ? 'text-black' : 'text-white'}`}>
         <div className="flex items-center gap-1.5">
-          <span className="text-white uppercase tracking-wider text-[9px] font-semibold">RESPUESTA:</span>
+          <span className={`uppercase tracking-wider text-[9px] font-semibold ${isGalena ? 'text-black' : 'text-white'}`}>RESPUESTA:</span>
           <span
             ref={regionBadgeRef}
-            className="px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest bg-white/10 text-white border border-white/20"
+            className={`px-2 py-0.5 rounded-full text-[9px] font-bold tracking-widest ${
+              isGalena ? 'bg-black/10 text-black border border-black/20' : 'bg-white/10 text-white border border-white/20'
+            }`}
           >
             BALANCE
           </span>
         </div>
 
-        <div className="flex items-center gap-1.5 text-white">
-          <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 shadow-[0_0_8px_#22d3ee] animate-pulse" />
-          <span className="text-[9px] uppercase tracking-wider font-semibold text-white">8 BANDAS</span>
+        <div className="flex items-center gap-1.5">
+          <span className={`w-1.5 h-1.5 rounded-full ${isGalena ? 'bg-black shadow-[0_0_8px_rgba(0,0,0,0.5)]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'} animate-pulse`} />
+          <span className={`text-[9px] uppercase tracking-wider font-semibold ${isGalena ? 'text-black' : 'text-white'}`}>8 BANDAS</span>
         </div>
       </div>
 
@@ -272,18 +318,20 @@ export const Visualizer = ({ isPlaying, isLoading, analyser }: VisualizerProps) 
           ref={canvasRef}
           width={280}
           height={52}
-          className="w-[280px] h-[52px] block filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]"
+          className={`w-[280px] h-[52px] block ${
+            isGalena ? 'drop-shadow-[0_1px_1px_rgba(255,255,255,0.5)]' : 'filter drop-shadow-[0_2px_8px_rgba(0,0,0,0.7)]'
+          }`}
         />
       </div>
 
       {/* VU Decibel Level Scale Markers */}
-      <div className="flex items-center justify-between w-full max-w-xs px-2 mt-0.5 text-[8px] font-mono tracking-widest text-white uppercase font-bold">
-        <span className="text-white font-bold">-20dB</span>
-        <span className="text-white font-bold">-10dB</span>
-        <span className="text-white font-bold">-3dB</span>
-        <span className="text-white font-bold">0dB</span>
-        <span className="text-white font-bold">+3dB</span>
-        <span className="text-cyan-300 font-bold">PEAK</span>
+      <div className={`flex items-center justify-between w-full max-w-xs px-2 mt-0.5 text-[8px] font-mono tracking-widest uppercase font-bold ${isGalena ? 'text-black' : 'text-white'}`}>
+        <span>-20dB</span>
+        <span>-10dB</span>
+        <span>-3dB</span>
+        <span>0dB</span>
+        <span>+3dB</span>
+        <span className={isGalena ? 'text-black font-extrabold' : 'text-cyan-300'}>PEAK</span>
       </div>
     </div>
   );

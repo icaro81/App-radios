@@ -1,8 +1,9 @@
 {
-  "versionName": "1.0.23",
-  "versionCode": 23,
-  "releaseDate": "2026-09-06",
-  "title": "Galena Digital v1.0.23",
-  "notes": "• Ecualizador paramétrico de 4 bandas (Bajo, Medio, Intermedio, Agudo) con perfiles rápidos.\n• Vúmetro de 8 bandas intercaladas (4 reales del analizador + 4 armónicas simuladas).\n• Compatibilidad con selector multimedia de Android Auto.\n• Bloqueo del protector de pantalla y reposo en Android TV.\n• Corrección de actualización en una sola instalación mediante purga de caché.\n• Botón de pegado directo de enlaces desde portapapeles con permisos nativos.\n• Audio garantizado en segundo plano y pantalla apagada.",
+  "versionName": "1.0.24",
+  "versionCode": 24,
+  "releaseDate": "2026-09-26",
+  "title": "Galena Digital v1.0.24",
+  "tagline": "Iconos Sol ☀️ / Luna 🌙, ecualizador nítido en fondo celeste y cuadro de cambios con reseñas dinámicas.",
+  "notes": "• Nuevo control táctil Sol ☀️ / Luna 🌙: Siluetas intuitivas de luna creciente (Negro Cristal) y sol radiante (Celeste Galena) con cápsula cristal e iluminación reactiva.\n• Ecualizador Canvas (VU Meter) perfeccionado en Celeste Galena: Eliminada la sombra negra distorsionada, logrando barras nítidas de cristal obsidiana y brillo especular.\n• Contraste perfecto en ventana de Ecualizador: Frecuencias, faders verticales y etiquetas con máxima legibilidad en ambos temas.\n• Cuadro de cambios y detalles dinámico: Cada actualización incluye su propia reseña destacada e historial navegable de versiones anteriores sin congelarse en la primera entrega.\n• Optimización de fluidez para Android TV y mandos a distancia de TV Box sin retardo en selección.",
   "downloadUrl": ""
 }

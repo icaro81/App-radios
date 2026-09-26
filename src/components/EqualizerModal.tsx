@@ -22,6 +22,7 @@ interface EqualizerModalProps {
   onChangeBand: (band: keyof EqualizerBands, value: number) => void;
   onReset: () => void;
   onApplyPreset: (preset: EqualizerBands) => void;
+  skin?: 'black' | 'galena';
 }
 
 const PRESETS: { name: string; icon: string; bands: EqualizerBands }[] = [
@@ -52,6 +53,7 @@ interface VerticalFaderProps {
   isFocused: boolean;
   onChange: (val: number) => void;
   onSelect: () => void;
+  skin?: 'black' | 'galena';
 }
 
 const VerticalFader: React.FC<VerticalFaderProps> = ({
@@ -61,7 +63,9 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
   isFocused,
   onChange,
   onSelect,
+  skin = 'black',
 }) => {
+  const isGalena = skin === 'galena';
   const trackRef = useRef<HTMLDivElement>(null);
 
   // Normalize: -12 to +12 dB -> 0% to 100%
@@ -100,18 +104,22 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
   return (
     <div
       onMouseEnter={onSelect}
-      className={`flex flex-col items-center justify-between rounded-2xl p-2 select-none ${
+      className={`flex flex-col items-center justify-between rounded-2xl p-2 select-none transition-all ${
         isFocused
-          ? 'bg-cyan-950/40 border-2 border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+          ? isGalena
+            ? 'bg-white/85 border-2 border-black ring-2 ring-black/40 shadow-[0_0_15px_rgba(0,0,0,0.25)]'
+            : 'bg-cyan-950/40 border-2 border-cyan-400 ring-2 ring-cyan-400/40 shadow-[0_0_15px_rgba(6,182,212,0.25)]'
+          : isGalena
+          ? 'bg-white/55 border border-black/15 shadow-sm'
           : 'bg-white/[0.04] border border-white/15'
       }`}
     >
       {/* Top Header: Label, Freq & dB */}
       <div className="w-full flex flex-col items-center text-center">
-        <span className="font-bold text-xs uppercase tracking-wider text-white">
+        <span className={`font-extrabold text-xs uppercase tracking-wider ${isGalena ? 'text-black' : 'text-white'}`}>
           {label}
         </span>
-        <span className="text-[9px] font-mono text-white font-medium">
+        <span className={`text-[9px] font-mono font-semibold ${isGalena ? 'text-neutral-900' : 'text-white'}`}>
           {freq}
         </span>
 
@@ -119,9 +127,15 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         <div
           className={`mt-1 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold ${
             isFocused
-              ? 'bg-cyan-400 text-black shadow-[0_0_8px_#22d3ee]'
+              ? isGalena
+                ? 'bg-black text-cyan-300 shadow-[0_0_8px_rgba(0,0,0,0.4)]'
+                : 'bg-cyan-400 text-black shadow-[0_0_8px_#22d3ee]'
               : value !== 0
-              ? 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+              ? isGalena
+                ? 'bg-black/15 text-black border border-black/25'
+                : 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/40'
+              : isGalena
+              ? 'bg-black/10 text-neutral-800 border border-black/15'
               : 'bg-white/10 text-white border border-white/20'
           }`}
         >
@@ -137,7 +151,11 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
           onSelect();
           onChange(Math.min(12, Number((value + 1).toFixed(1))));
         }}
-        className="my-1.5 w-7 h-6 rounded-md bg-white/10 hover:bg-white/20 active:scale-95 text-white hover:text-cyan-300 text-xs font-bold font-mono flex items-center justify-center cursor-pointer"
+        className={`my-1.5 w-7 h-6 rounded-md ${
+          isGalena
+            ? 'bg-black/10 hover:bg-black/20 text-black font-extrabold'
+            : 'bg-white/10 hover:bg-white/20 text-white hover:text-cyan-300'
+        } active:scale-95 text-xs font-mono flex items-center justify-center cursor-pointer`}
         title="Subir +1 dB"
       >
         ▲
@@ -151,14 +169,18 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         className="relative w-8 h-28 sm:h-32 flex items-center justify-center cursor-pointer touch-none"
       >
         {/* Track Groove */}
-        <div className="absolute inset-y-0 w-2 rounded-full bg-black/80 border border-white/20 overflow-hidden">
+        <div className={`absolute inset-y-0 w-2 rounded-full ${
+          isGalena ? 'bg-black/20 border border-black/25' : 'bg-black/80 border border-white/20'
+        } overflow-hidden`}>
           {/* Zero dB reference center line indicator */}
-          <div className="absolute top-1/2 left-0 right-0 h-[1px] bg-white/60 z-10" />
+          <div className={`absolute top-1/2 left-0 right-0 h-[1px] ${isGalena ? 'bg-black/50' : 'bg-white/60'} z-10`} />
 
-          {/* Active Level Fill from center (0 dB) with Digital Cyan */}
+          {/* Active Level Fill from center (0 dB) */}
           {value >= 0 ? (
             <div
-              className="absolute left-0 right-0 bg-cyan-400 shadow-[0_0_8px_#22d3ee]"
+              className={`absolute left-0 right-0 ${
+                isGalena ? 'bg-black shadow-[0_0_6px_rgba(0,0,0,0.4)]' : 'bg-cyan-400 shadow-[0_0_8px_#22d3ee]'
+              }`}
               style={{
                 bottom: '50%',
                 height: `${Math.max(0, percent - 50)}%`,
@@ -166,7 +188,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
             />
           ) : (
             <div
-              className="absolute left-0 right-0 bg-cyan-700"
+              className={`absolute left-0 right-0 ${isGalena ? 'bg-neutral-800' : 'bg-cyan-700'}`}
               style={{
                 top: '50%',
                 height: `${Math.max(0, 50 - percent)}%`,
@@ -176,7 +198,9 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         </div>
 
         {/* Level Scale Ticks (Left & Right) */}
-        <div className="absolute inset-y-0 left-0 flex flex-col justify-between pointer-events-none py-1 text-[8px] font-mono text-white font-semibold">
+        <div className={`absolute inset-y-0 left-0 flex flex-col justify-between pointer-events-none py-1 text-[8px] font-mono ${
+          isGalena ? 'text-black font-extrabold' : 'text-white font-semibold'
+        }`}>
           <span>+</span>
           <span>0</span>
           <span>-</span>
@@ -186,7 +210,11 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
         <div
           className={`absolute w-7 h-4 rounded flex items-center justify-center border pointer-events-none z-20 ${
             isFocused
-              ? 'bg-cyan-400 border-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.8)]'
+              ? isGalena
+                ? 'bg-black border-neutral-900 shadow-[0_0_10px_rgba(0,0,0,0.5)]'
+                : 'bg-cyan-400 border-cyan-200 shadow-[0_0_12px_rgba(6,182,212,0.8)]'
+              : isGalena
+              ? 'bg-black border-black shadow-md'
               : 'bg-white border-white/80 shadow-md'
           }`}
           style={{
@@ -196,7 +224,9 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
           {/* Center LED notch line */}
           <div
             className={`w-3.5 h-[2px] rounded-full ${
-              isFocused ? 'bg-black' : 'bg-neutral-800'
+              isFocused
+                ? isGalena ? 'bg-cyan-300' : 'bg-black'
+                : isGalena ? 'bg-cyan-400' : 'bg-neutral-800'
             }`}
           />
         </div>
@@ -210,7 +240,11 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
           onSelect();
           onChange(Math.max(-12, Number((value - 1).toFixed(1))));
         }}
-        className="my-1.5 w-7 h-6 rounded-md bg-white/10 hover:bg-white/20 active:scale-95 text-white hover:text-cyan-300 text-xs font-bold font-mono flex items-center justify-center cursor-pointer"
+        className={`my-1.5 w-7 h-6 rounded-md ${
+          isGalena
+            ? 'bg-black/10 hover:bg-black/20 text-black font-extrabold'
+            : 'bg-white/10 hover:bg-white/20 text-white hover:text-cyan-300'
+        } active:scale-95 text-xs font-mono flex items-center justify-center cursor-pointer`}
         title="Bajar -1 dB"
       >
         ▼
@@ -218,7 +252,7 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
 
       {/* Remote Helper Hint */}
       {isFocused && (
-        <span className="text-[9px] font-mono font-bold text-cyan-300 tracking-tighter">
+        <span className={`text-[9px] font-mono font-bold ${isGalena ? 'text-black' : 'text-cyan-300'} tracking-tighter`}>
           [▲▼ dB]
         </span>
       )}
@@ -226,14 +260,16 @@ const VerticalFader: React.FC<VerticalFaderProps> = ({
   );
 };
 
-export const EqualizerModal: React.FC<EqualizerModalProps> = ({
+export const EqualizerModal = ({
   isOpen,
   onClose,
   bands,
   onChangeBand,
   onReset,
   onApplyPreset,
-}) => {
+  skin = 'black',
+}: EqualizerModalProps) => {
+  const isGalena = skin === 'galena';
   // Navigation state for D-Pad / Remote control
   const [focusedItem, setFocusedItem] = useState<string>('band-bass');
 
@@ -380,22 +416,36 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 p-2 sm:p-4 overflow-hidden">
+    <div className={`fixed inset-0 z-50 flex items-center justify-center ${
+      isGalena ? 'bg-cyan-950/70 backdrop-blur-md' : 'bg-black/90'
+    } p-2 sm:p-4 overflow-hidden`}>
       <div
-        className="w-full max-w-lg sm:max-w-xl landscape:max-w-xl rounded-2xl bg-[#101016] border border-white/15 p-3 sm:p-4 text-white relative overflow-hidden flex flex-col"
+        className={`w-full max-w-lg sm:max-w-xl landscape:max-w-xl rounded-2xl ${
+          isGalena
+            ? 'glass-surface border border-white/50 text-black shadow-[0_25px_60px_rgba(8,51,68,0.5)]'
+            : 'bg-[#101016] border border-white/15 text-white shadow-2xl'
+        } p-3 sm:p-4 relative overflow-hidden flex flex-col`}
         onClick={(e) => e.stopPropagation()}
       >
         {/* 1. Header (Compact) */}
-        <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/10 shrink-0">
+        <div className={`flex items-center justify-between pb-2 mb-2 border-b ${
+          isGalena ? 'border-black/15' : 'border-white/10'
+        } shrink-0`}>
           <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-cyan-500/20 flex items-center justify-center border border-cyan-400/30 text-white shrink-0">
-              <SlidersHorizontal className="w-3.5 h-3.5 text-cyan-400" />
+            <div className={`w-7 h-7 rounded-lg ${
+              isGalena ? 'bg-black/10 border-black/20 text-black' : 'bg-cyan-500/20 border-cyan-400/30 text-white'
+            } flex items-center justify-center border shrink-0`}>
+              <SlidersHorizontal className={`w-3.5 h-3.5 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
             </div>
             <div className="flex items-center gap-2">
-              <h2 className="text-sm font-bold text-white tracking-wide">
+              <h2 className={`text-sm font-extrabold tracking-wide ${isGalena ? 'text-black' : 'text-white'}`}>
                 Ecualizador Gráfico
               </h2>
-              <span className="px-1.5 py-0.2 rounded text-[8px] font-mono font-bold tracking-wider bg-cyan-500/20 text-cyan-300 border border-cyan-400/30">
+              <span className={`px-1.5 py-0.5 rounded text-[8px] font-mono font-bold tracking-wider ${
+                isGalena
+                  ? 'bg-black/10 text-black border border-black/20'
+                  : 'bg-cyan-500/20 text-cyan-300 border border-cyan-400/30'
+              }`}>
                 4 BANDAS HD
               </span>
             </div>
@@ -407,7 +457,11 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
             onMouseEnter={() => setFocusedItem('eq-close')}
             className={`w-7 h-7 rounded-full flex items-center justify-center cursor-pointer transition-colors ${
               focusedItem === 'eq-close'
-                ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 shadow-[0_0_10px_#22d3ee]'
+                ? isGalena
+                  ? 'bg-black text-cyan-300 shadow-[0_0_10px_rgba(0,0,0,0.4)]'
+                  : 'bg-cyan-400 text-black ring-2 ring-cyan-300 shadow-[0_0_10px_#22d3ee]'
+                : isGalena
+                ? 'bg-black/10 hover:bg-black/20 text-black'
                 : 'bg-white/10 hover:bg-white/20 text-white'
             }`}
             title="Cerrar"
@@ -419,8 +473,10 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
         {/* 2. Quick Presets Row (Horizontally compact) */}
         <div className="flex items-center justify-between gap-1.5 pb-2.5 shrink-0">
           <div className="flex items-center gap-1 overflow-x-auto no-scrollbar flex-1">
-            <span className="text-[9px] font-mono uppercase tracking-wider text-white flex items-center gap-1 mr-1 shrink-0 font-semibold">
-              <Sparkles className="w-2.5 h-2.5 text-cyan-400" />
+            <span className={`text-[9px] font-mono uppercase tracking-wider flex items-center gap-1 mr-1 shrink-0 font-bold ${
+              isGalena ? 'text-black' : 'text-white'
+            }`}>
+              <Sparkles className={`w-2.5 h-2.5 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
               Perfiles:
             </span>
             {PRESETS.map((p, index) => {
@@ -434,14 +490,24 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
                   onMouseEnter={() => setFocusedItem(`preset-${index}`)}
                   className={`px-2 py-1 rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer shrink-0 transition-all ${
                     isFocused
-                      ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 font-bold shadow-[0_0_10px_#22d3ee]'
+                      ? isGalena
+                        ? 'bg-black text-cyan-300 ring-2 ring-black font-bold shadow-md'
+                        : 'bg-cyan-400 text-black ring-2 ring-cyan-300 font-bold shadow-[0_0_10px_#22d3ee]'
                       : active
-                      ? 'bg-cyan-500/30 text-white border border-cyan-400/60 font-bold'
+                      ? isGalena
+                        ? 'bg-black text-cyan-300 border border-black font-bold shadow-sm'
+                        : 'bg-cyan-500/30 text-white border border-cyan-400/60 font-bold'
+                      : isGalena
+                      ? 'bg-white/50 hover:bg-white/70 text-black border border-black/15 font-semibold'
                       : 'bg-white/10 hover:bg-white/20 text-white border border-white/10'
                   }`}
                 >
                   <span className="text-[10px]">{p.icon}</span>
-                  <span className="text-[10px] whitespace-nowrap text-white font-medium">{p.name}</span>
+                  <span className={`text-[10px] whitespace-nowrap font-medium ${
+                    active || isFocused ? (isGalena ? 'text-cyan-300 font-bold' : 'text-white font-bold') : (isGalena ? 'text-black font-semibold' : 'text-white')
+                  }`}>
+                    {p.name}
+                  </span>
                 </button>
               );
             })}
@@ -454,13 +520,17 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
             onMouseEnter={() => setFocusedItem('eq-reset')}
             className={`px-2 py-1 rounded-lg text-[10px] font-mono flex items-center gap-1 cursor-pointer shrink-0 transition-all ${
               focusedItem === 'eq-reset'
-                ? 'ring-2 ring-cyan-300 bg-cyan-400 text-black font-bold shadow-[0_0_10px_#22d3ee]'
+                ? isGalena
+                  ? 'bg-black text-cyan-300 ring-2 ring-black font-bold'
+                  : 'ring-2 ring-cyan-300 bg-cyan-400 text-black font-bold shadow-[0_0_10px_#22d3ee]'
+                : isGalena
+                ? 'bg-white/50 hover:bg-white/70 text-black border border-black/15 font-semibold'
                 : 'text-white hover:text-cyan-300 bg-white/10 hover:bg-white/20 border border-white/10'
             }`}
             title="Restablecer todas las bandas a 0 dB"
           >
-            <RotateCcw className="w-2.5 h-2.5 text-white" />
-            <span className="text-white font-semibold">0 dB</span>
+            <RotateCcw className={`w-2.5 h-2.5 ${isGalena ? 'text-black' : 'text-white'}`} />
+            <span className={`font-semibold ${isGalena ? 'text-black' : 'text-white'}`}>0 dB</span>
           </button>
         </div>
 
@@ -479,17 +549,20 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
                 isFocused={isFocused}
                 onChange={(val) => onChangeBand(config.key, val)}
                 onSelect={() => setFocusedItem(`band-${config.key}`)}
+                skin={skin}
               />
             );
           })}
         </div>
 
         {/* 4. Footer Bar: Status, Remote Navigation Legend & Done Button */}
-        <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-white/10 shrink-0">
-          <div className="flex items-center gap-1.5 text-[10px] text-white">
-            <Volume2 className="w-3.5 h-3.5 text-cyan-400" />
+        <div className={`flex items-center justify-between pt-2.5 mt-2 border-t ${
+          isGalena ? 'border-black/15 text-black' : 'border-white/10 text-white'
+        } shrink-0`}>
+          <div className="flex items-center gap-1.5 text-[10px]">
+            <Volume2 className={`w-3.5 h-3.5 ${isGalena ? 'text-black' : 'text-cyan-400'}`} />
             <span className="hidden sm:inline font-semibold">Mando TV:</span>
-            <span className="font-mono text-[9px] text-white">
+            <span className={`font-mono text-[9px] ${isGalena ? 'text-neutral-900 font-medium' : 'text-white'}`}>
               [▲▼] Ajustar dB • [◄►] Cambiar banda
             </span>
           </div>
@@ -499,9 +572,13 @@ export const EqualizerModal: React.FC<EqualizerModalProps> = ({
             type="button"
             onClick={onClose}
             onMouseEnter={() => setFocusedItem('eq-done')}
-            className={`px-5 py-1.5 rounded-xl font-bold text-xs cursor-pointer transition-all ${
+            className={`px-5 py-1.5 rounded-xl font-bold text-xs cursor-pointer transition-all active:scale-95 ${
               focusedItem === 'eq-done'
-                ? 'bg-cyan-400 text-black ring-2 ring-cyan-300 font-bold shadow-[0_0_12px_#22d3ee]'
+                ? isGalena
+                  ? 'bg-black text-cyan-300 ring-2 ring-black font-bold shadow-[0_0_12px_rgba(0,0,0,0.4)]'
+                  : 'bg-cyan-400 text-black ring-2 ring-cyan-300 font-bold shadow-[0_0_12px_#22d3ee]'
+                : isGalena
+                ? 'bg-black text-white hover:bg-neutral-800 shadow-md'
                 : 'bg-white text-black hover:bg-cyan-300'
             }`}
           >

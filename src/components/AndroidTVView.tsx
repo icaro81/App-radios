@@ -40,9 +40,10 @@ interface AndroidTVViewProps {
   onOpenEqualizer?: () => void;
   isCheckingUpdate?: boolean;
   isLandscape?: boolean;
+  skin?: 'black' | 'galena';
 }
 
-export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
+export const AndroidTVView = ({
   currentStation,
   stations,
   playerStatus,
@@ -63,7 +64,8 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
   onCheckUpdate,
   onOpenEqualizer,
   isCheckingUpdate,
-}) => {
+  skin = 'black',
+}: AndroidTVViewProps) => {
   const isPlaying = playerStatus === 'playing';
   const isLoading = playerStatus === 'loading';
 
@@ -158,7 +160,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
 
               {/* Fluid Zero-Lag Canvas Sound Visualizer */}
               <div className="mt-0.5">
-                <Visualizer isPlaying={isPlaying} isLoading={isLoading} analyser={analyser} />
+                <Visualizer isPlaying={isPlaying} isLoading={isLoading} analyser={analyser} skin={skin} />
               </div>
 
               {/* Error Notice */}
