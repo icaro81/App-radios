@@ -720,7 +720,7 @@ export default function App() {
     onCheckUpdate: () => performUpdateCheck(true),
     onToggleSkin: toggleSkin,
     stations,
-    isTVMode: activeMode === 'tv',
+    isTVMode: true,
     isModalOpen: isEqOpen || isAddModalOpen || isUpdateModalOpen,
   });
 
@@ -1078,6 +1078,7 @@ export default function App() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddStation={handleAddStation}
+        skin={skin}
       />
 
       {/* In-App Update Modal */}

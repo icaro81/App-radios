@@ -132,8 +132,12 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                       onMouseEnter={() => onSetFocus('skin-toggle')}
                       className={`flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full border transition-all cursor-pointer ${
                         focusedElement === 'skin-toggle'
-                          ? 'border-yellow-300 bg-yellow-400 text-black font-bold scale-110 ring-2 ring-yellow-400 shadow-[0_0_14px_rgba(250,204,21,0.85)]'
-                          : 'bg-white/10 hover:bg-white/20 border-white/20 text-yellow-300 font-semibold'
+                          ? isGalena
+                            ? 'border-2 border-black bg-white text-black font-bold scale-110 ring-4 ring-black/40 shadow-lg'
+                            : 'border-cyan-300 bg-cyan-400 text-black font-bold scale-110 ring-4 ring-cyan-400 shadow-[0_0_15px_#22d3ee]'
+                          : isGalena
+                          ? 'bg-white/60 border-black/20 text-black font-semibold'
+                          : 'bg-white/10 hover:bg-white/20 border-white/20 text-white font-semibold'
                       }`}
                       title="Cambiar tema: Luna 🌙 / Sol ☀️ (Tecla 0 o Color en mando)"
                     >
@@ -230,7 +234,7 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                   className={`relative w-16 h-16 sm:w-18 sm:h-18 rounded-full flex items-center justify-center cursor-pointer active:scale-95 transition-transform duration-75 ${
                     focusedElement === 'play-pause'
                       ? isGalena
-                        ? 'ring-4 ring-black scale-110 bg-yellow-400 text-black font-extrabold border-2 border-black shadow-[0_0_25px_rgba(0,0,0,0.45)]'
+                        ? 'ring-4 ring-black scale-110 bg-black text-cyan-300 font-extrabold border-2 border-neutral-900 shadow-[0_0_25px_rgba(0,0,0,0.6)]'
                         : 'ring-4 ring-cyan-400 scale-110 bg-cyan-400 text-black font-extrabold border-2 border-cyan-200 shadow-[0_0_25px_#22d3ee]'
                       : isPlaying
                       ? isGalena
@@ -559,10 +563,12 @@ export const AndroidTVView: React.FC<AndroidTVViewProps> = ({
                     onMouseEnter={() => onSetFocus('footer-skin')}
                     className={`flex items-center gap-1.5 transition-all duration-75 cursor-pointer px-2.5 py-1 rounded-lg ${
                       focusedElement === 'footer-skin'
-                        ? 'bg-yellow-400 text-black ring-2 ring-yellow-300 border border-yellow-200 font-bold scale-105 shadow-[0_0_12px_#facc15]'
+                        ? isGalena
+                          ? 'bg-black text-white ring-2 ring-black border border-neutral-800 font-bold scale-105 shadow-md'
+                          : 'bg-cyan-400 text-black ring-2 ring-cyan-300 border border-cyan-200 font-bold scale-105 shadow-[0_0_12px_#22d3ee]'
                         : isGalena
                         ? 'text-black hover:text-neutral-800 border border-black/15 bg-white/40 font-semibold'
-                        : 'text-white hover:text-yellow-300 border border-transparent'
+                        : 'text-white hover:text-cyan-300 border border-transparent'
                     }`}
                     title="Alternar Skin Sol ☀️ / Luna 🌙"
                   >

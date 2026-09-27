@@ -286,6 +286,40 @@ export const EqualizerModal = ({
         return;
       }
 
+      // Direct shortcut keys on TV remote:
+      // [1] to [4] -> apply preset
+      // [0] -> reset to 0 dB
+      if (e.key === '1' || code === 49) {
+        e.preventDefault();
+        if (PRESETS[0]) onApplyPreset(PRESETS[0].bands);
+        setFocusedItem('preset-0');
+        return;
+      }
+      if (e.key === '2' || code === 50) {
+        e.preventDefault();
+        if (PRESETS[1]) onApplyPreset(PRESETS[1].bands);
+        setFocusedItem('preset-1');
+        return;
+      }
+      if (e.key === '3' || code === 51) {
+        e.preventDefault();
+        if (PRESETS[2]) onApplyPreset(PRESETS[2].bands);
+        setFocusedItem('preset-2');
+        return;
+      }
+      if (e.key === '4' || code === 52) {
+        e.preventDefault();
+        if (PRESETS[3]) onApplyPreset(PRESETS[3].bands);
+        setFocusedItem('preset-3');
+        return;
+      }
+      if (e.key === '0' || code === 48) {
+        e.preventDefault();
+        onReset();
+        setFocusedItem('eq-reset');
+        return;
+      }
+
       const isUp = e.key === 'ArrowUp' || code === 19;
       const isDown = e.key === 'ArrowDown' || code === 20;
       const isLeft = e.key === 'ArrowLeft' || code === 21;
@@ -307,6 +341,20 @@ export const EqualizerModal = ({
           setFocusedItem('eq-done');
         }
         return;
+      }
+
+      // If focused on Close [X] button:
+      if (focusedItem === 'eq-close') {
+        if (isDown) {
+          e.preventDefault();
+          setFocusedItem('preset-0');
+          return;
+        }
+        if (isLeft) {
+          e.preventDefault();
+          setFocusedItem('eq-reset');
+          return;
+        }
       }
 
       // If focused on one of the 4 Vertical Bands:
@@ -357,6 +405,11 @@ export const EqualizerModal = ({
 
       // If focused on Presets row or Reset:
       if (focusedItem.startsWith('preset-') || focusedItem === 'eq-reset') {
+        if (isUp) {
+          e.preventDefault();
+          setFocusedItem('eq-close');
+          return;
+        }
         if (isRight) {
           e.preventDefault();
           setFocusedItem((cur) => {
@@ -364,6 +417,7 @@ export const EqualizerModal = ({
             if (cur === 'preset-1') return 'preset-2';
             if (cur === 'preset-2') return 'preset-3';
             if (cur === 'preset-3') return 'eq-reset';
+            if (cur === 'eq-reset') return 'eq-close';
             return cur;
           });
           return;
@@ -371,6 +425,7 @@ export const EqualizerModal = ({
         if (isLeft) {
           e.preventDefault();
           setFocusedItem((cur) => {
+            if (cur === 'eq-close') return 'eq-reset';
             if (cur === 'eq-reset') return 'preset-3';
             if (cur === 'preset-3') return 'preset-2';
             if (cur === 'preset-2') return 'preset-1';

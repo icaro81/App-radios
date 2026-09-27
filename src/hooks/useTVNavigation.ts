@@ -87,7 +87,7 @@ export function useTVNavigation({
   ]);
 
   useEffect(() => {
-    if (!isTVMode || isModalOpen) return;
+    if (isModalOpen) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore navigation shortcuts if typing in an input or textarea
@@ -142,10 +142,8 @@ export function useTVNavigation({
         return;
       }
 
-      // 2. Direct Theme / Skin Toggle Remote Shortcuts:
-      // - Key '0' (number zero on TV numeric remote)
-      // - Key '*' or 't' or 'T' or 's' or 'S'
-      // - TV Remote Color keys: Red (183/403), Green (184/404), Yellow (185/405), Blue (186/406)
+      // 2. Direct Function Remote Shortcuts:
+      // Skin toggle: '0', '*', 't', 'T', 's', 'S', Red TV button (183, 403)
       if (
         e.key === '0' ||
         e.key === '*' ||
@@ -153,18 +151,33 @@ export function useTVNavigation({
         e.key === 'T' ||
         e.key === 's' ||
         e.key === 'S' ||
-        code === 170 || // TV audio / skin key
+        code === 170 ||
         code === 183 ||
-        code === 184 ||
-        code === 185 ||
-        code === 186 ||
-        code === 403 ||
-        code === 404 ||
-        code === 405 ||
-        code === 406
+        code === 403
       ) {
         e.preventDefault();
         onToggleSkin?.();
+        return;
+      }
+
+      // Equalizer shortcut: 'e', 'E', Green TV button (184, 404)
+      if (e.key === 'e' || e.key === 'E' || code === 184 || code === 404) {
+        e.preventDefault();
+        onOpenEqualizer?.();
+        return;
+      }
+
+      // Update check shortcut: 'u', 'U', Yellow TV button (185, 405)
+      if (e.key === 'u' || e.key === 'U' || code === 185 || code === 405) {
+        e.preventDefault();
+        onCheckUpdate?.();
+        return;
+      }
+
+      // Add Station shortcut: 'a', 'A', Blue TV button (186, 406)
+      if (e.key === 'a' || e.key === 'A' || code === 186 || code === 406) {
+        e.preventDefault();
+        onOpenAddModal?.();
         return;
       }
 

@@ -12,13 +12,13 @@ export const VERSION_HISTORY: VersionRelease[] = [
     version: '1.0.40',
     buildCode: 40,
     date: '27 Sep 2026',
-    tagline: 'Control remoto optimizado para Android TV y TV Box: cambio ágil de Skin (Sol ☀️ / Luna 🌙) y navegación D-Pad inteligente.',
+    tagline: 'Control remoto 100% universal para Android TV y TV Box: compatibilidad total con mando en Actualización, Ecualizador, Agregar Radio y Consola.',
     changes: [
-      'Cambio directo de Skin con mando a distancia: Acceso instantáneo en cabecera y pie de página, o pulsando la tecla [0], [*] o teclas de color en el mando.',
-      'Navegación espacial D-Pad perfeccionada: Salto lateral con flecha izquierda [◄] desde cualquier emisora directamente al panel de reproducción.',
-      'Acceso rápido al conmutador de tema subiendo desde la primera emisora o los controles principales [▲].',
-      'Anillos de enfoque con alto contraste y brillo reactivo optimizados para televisores a distancia.',
-      'Control de tecla Volver/Atrás que regresa el foco a la consola antes de salir de la aplicación.'
+      'Compatibilidad total en Ventana de Actualización: Navegación completa con D-Pad entre botones de descarga, comprobación, cuadro de cambios, versiones y repositorio con anillos de enfoque brillantes.',
+      'Control remoto en Ecualizador: Ajuste directo de dB con [▲ ▼], cambio de bandas con [◄ ►], selección numérica directa de presets [1 al 4] y restablecimiento [0].',
+      'Control remoto en Agregar Radio: Selección de campos, enlace, pegado desde portapapeles y botones con mando.',
+      'Cambio directo de Skin con mando a distancia: Tecla [0], [*] o teclas de color para alternar al instante entre Sol ☀️ y Luna 🌙.',
+      'Contraste perfecto en tema Sol / Celeste Galena: Textos oscuros nítidos sobre fondos claros y visualizador de audio luminoso sobre la pantalla OLED central.'
     ],
     isLatest: true,
   },

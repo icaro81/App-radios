@@ -3,7 +3,7 @@
   "versionCode": 40,
   "releaseDate": "2026-09-27",
   "title": "Galena Digital v1.0.40",
-  "tagline": "Control remoto optimizado para Android TV: cambio de skin directo (Sol ☀️ / Luna 🌙) y navegación D-Pad inteligente.",
-  "notes": "• Cambio directo de Skin con mando a distancia: Acceso instantáneo en cabecera y pie de página, o pulsando la tecla [0], [*] o teclas de color en el mando.\n• Navegación espacial D-Pad perfeccionada: Salto lateral con flecha izquierda [◄] desde cualquier emisora directamente al panel de reproducción.\n• Acceso rápido al conmutador de tema subiendo desde la primera emisora o los controles principales [▲].\n• Anillos de enfoque con alto contraste y brillo reactivo optimizados para televisores a distancia.\n• Control de tecla Volver/Atrás que regresa el foco a la consola antes de salir de la aplicación.",
+  "tagline": "Control remoto 100% universal para Android TV: compatibilidad total con mando en Actualización, Ecualizador, Agregar Radio y Consola.",
+  "notes": "• Ventana de Actualización con control remoto: Navegación espacial con D-Pad entre botones de descarga, comprobación, cuadro de cambios, versiones y configuración de repositorio.\n• Control remoto en Ecualizador: Ajuste directo de dB con [▲ ▼], cambio de bandas con [◄ ►], selección numérica directa de presets [1 al 4] y restablecimiento [0].\n• Control remoto en Agregar Radio: Selección de campos, pegado de enlace y botones con mando.\n• Cambio directo de Skin con mando a distancia: Tecla [0], [*] o teclas de color para alternar al instante entre Sol ☀️ y Luna 🌙.\n• Contraste perfecto en tema Sol: Textos oscuros de alta legibilidad sobre fondos claros y visualizador reactivo luminoso.",
   "downloadUrl": ""
 }
