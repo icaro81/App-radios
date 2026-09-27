@@ -5,6 +5,7 @@ interface VisualizerProps {
   isLoading: boolean;
   analyser?: AnalyserNode | null;
   skin?: 'black' | 'galena';
+  darkBg?: boolean;
 }
 
 // 4 Real Frequency Ranges sampled from the AnalyserNode
@@ -15,14 +16,17 @@ const REAL_AUDIO_RANGES = [
   { name: 'Agudo', start: 26, end: 58, gain: 1.85 },        // Real 3 -> Placed at Slot 6
 ];
 
-export const Visualizer = ({ isPlaying, isLoading, analyser, skin = 'black' }: VisualizerProps) => {
+export const Visualizer = ({ isPlaying, isLoading, analyser, skin = 'black', darkBg = false }: VisualizerProps) => {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const regionBadgeRef = useRef<HTMLSpanElement | null>(null);
-  const skinRef = useRef<'black' | 'galena'>(skin);
+  // When inside a dark background (such as an OLED screen), the visualizer should always render in high-contrast bright tones
+  const effectiveSkin = darkBg ? 'black' : skin;
+  const skinRef = useRef<'black' | 'galena'>(effectiveSkin);
+  const isGalena = !darkBg && skin === 'galena';
 
   useEffect(() => {
-    skinRef.current = skin;
-  }, [skin]);
+    skinRef.current = darkBg ? 'black' : skin;
+  }, [skin, darkBg]);
 
   // References for zero-allocation 60fps loop
   const animFrameRef = useRef<number | null>(null);
@@ -286,9 +290,7 @@ export const Visualizer = ({ isPlaying, isLoading, analyser, skin = 'black' }: V
         cancelAnimationFrame(animFrameRef.current);
       }
     };
-  }, [isPlaying, analyser, skin]);
-
-  const isGalena = skin === 'galena';
+  }, [isPlaying, analyser, skin, darkBg]);
 
   return (
     <div id="audio-visualizer-container" className="flex flex-col items-center justify-center py-1 w-full select-none">
