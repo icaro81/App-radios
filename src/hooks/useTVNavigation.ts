@@ -12,6 +12,7 @@ interface TVNavigationOptions {
   onOpenAddModal?: () => void;
   onOpenEqualizer?: () => void;
   onCheckUpdate?: () => void;
+  onToggleSkin?: () => void;
   stations: RadioStation[];
   isTVMode: boolean;
   isModalOpen?: boolean;
@@ -28,19 +29,23 @@ export function useTVNavigation({
   onOpenAddModal,
   onOpenEqualizer,
   onCheckUpdate,
+  onToggleSkin,
   stations,
   isTVMode,
   isModalOpen = false,
 }: TVNavigationOptions) {
   // Focus elements:
+  // Header:   'skin-toggle'
   // Controls: 'prev-station' | 'play-pause' | 'next-station'
   // Audio:    'mute' | 'vol-down' | 'vol-up' | 'eq-btn'
   // Stations: 'station-${id}' | 'add-station'
-  // Footer:   'check-updates'
+  // Footer:   'check-updates' | 'footer-skin'
   const [focusedElement, setFocusedElement] = useState<string>('play-pause');
 
   const handleSelectFocused = useCallback(() => {
-    if (focusedElement === 'play-pause') {
+    if (focusedElement === 'skin-toggle' || focusedElement === 'footer-skin') {
+      onToggleSkin?.();
+    } else if (focusedElement === 'play-pause') {
       onPlayPause();
     } else if (focusedElement === 'prev-station') {
       onPreviousStation();
@@ -67,6 +72,7 @@ export function useTVNavigation({
     }
   }, [
     focusedElement,
+    onToggleSkin,
     onPlayPause,
     onPreviousStation,
     onNextStation,
@@ -136,7 +142,33 @@ export function useTVNavigation({
         return;
       }
 
-      // 2. Direct Station Select with Numeric Keys (1 to 9)
+      // 2. Direct Theme / Skin Toggle Remote Shortcuts:
+      // - Key '0' (number zero on TV numeric remote)
+      // - Key '*' or 't' or 'T' or 's' or 'S'
+      // - TV Remote Color keys: Red (183/403), Green (184/404), Yellow (185/405), Blue (186/406)
+      if (
+        e.key === '0' ||
+        e.key === '*' ||
+        e.key === 't' ||
+        e.key === 'T' ||
+        e.key === 's' ||
+        e.key === 'S' ||
+        code === 170 || // TV audio / skin key
+        code === 183 ||
+        code === 184 ||
+        code === 185 ||
+        code === 186 ||
+        code === 403 ||
+        code === 404 ||
+        code === 405 ||
+        code === 406
+      ) {
+        e.preventDefault();
+        onToggleSkin?.();
+        return;
+      }
+
+      // 3. Direct Station Select with Numeric Keys (1 to 9)
       if (/^[1-9]$/.test(e.key)) {
         const index = parseInt(e.key, 10) - 1;
         if (stations[index]) {
@@ -147,7 +179,16 @@ export function useTVNavigation({
         }
       }
 
-      // 3. Spatial Navigation on TV (D-Pad Arrows and Center OK button)
+      // 4. Back Key (Android TV Back / Esc) -> Returns focus to play-pause if elsewhere
+      if (code === 4 || code === 27 || e.key === 'Escape' || e.key === 'BrowserBack') {
+        if (focusedElement !== 'play-pause') {
+          e.preventDefault();
+          setFocusedElement('play-pause');
+          return;
+        }
+      }
+
+      // 5. Spatial Navigation on TV (D-Pad Arrows and Center OK button)
       const isUp = e.key === 'ArrowUp' || code === 19;
       const isDown = e.key === 'ArrowDown' || code === 20;
       const isLeft = e.key === 'ArrowLeft' || code === 21;
@@ -166,22 +207,27 @@ export function useTVNavigation({
         setFocusedElement((current) => {
           const isStationItem = current.startsWith('station-');
           const isAddBtn = current === 'add-station';
+          const firstStation = stations.length > 0 ? `station-${stations[0].id}` : 'add-station';
 
           // RIGHT ARROW NAVIGATION
           if (isRight) {
+            if (current === 'skin-toggle') {
+              return firstStation;
+            }
             if (current === 'prev-station') return 'play-pause';
             if (current === 'play-pause') return 'next-station';
             if (current === 'next-station') {
-              return stations.length > 0 ? `station-${stations[0].id}` : current;
+              return firstStation;
             }
 
             if (current === 'mute') return 'vol-down';
             if (current === 'vol-down') return 'vol-up';
             if (current === 'vol-up') return 'eq-btn';
             if (current === 'eq-btn') {
-              return stations.length > 0 ? `station-${stations[0].id}` : current;
+              return firstStation;
             }
 
+            if (current === 'footer-skin') return 'eq-btn';
             if (current === 'check-updates') {
               return 'add-station';
             }
@@ -189,6 +235,7 @@ export function useTVNavigation({
             if (isStationItem) {
               const currentId = current.replace('station-', '');
               const currentIndex = stations.findIndex((s) => s.id === currentId);
+              // In dual grid, step to next column if exists
               if (currentIndex >= 0 && currentIndex < stations.length - 1) {
                 return `station-${stations[currentIndex + 1].id}`;
               }
@@ -200,21 +247,12 @@ export function useTVNavigation({
 
           // LEFT ARROW NAVIGATION
           if (isLeft) {
-            if (isStationItem) {
-              const currentId = current.replace('station-', '');
-              const currentIndex = stations.findIndex((s) => s.id === currentId);
-              if (currentIndex === 0) {
-                return 'next-station';
-              }
-              if (currentIndex > 0) {
-                return `station-${stations[currentIndex - 1].id}`;
-              }
+            // From ANY station, pressing LEFT immediately jumps to the left controls column!
+            if (isStationItem || isAddBtn) {
               return 'play-pause';
             }
 
-            if (isAddBtn) {
-              return stations.length > 0 ? `station-${stations[stations.length - 1].id}` : 'check-updates';
-            }
+            if (current === 'skin-toggle') return 'prev-station';
 
             if (current === 'eq-btn') return 'vol-up';
             if (current === 'vol-up') return 'vol-down';
@@ -224,21 +262,26 @@ export function useTVNavigation({
             if (current === 'next-station') return 'play-pause';
             if (current === 'play-pause') return 'prev-station';
 
-            if (current === 'check-updates') return 'mute';
+            if (current === 'check-updates') return 'footer-skin';
+            if (current === 'footer-skin') return 'mute';
 
             return current;
           }
 
           // DOWN ARROW NAVIGATION
           if (isDown) {
+            if (current === 'skin-toggle') {
+              return 'play-pause';
+            }
+
             if (current === 'prev-station') return 'mute';
             if (current === 'play-pause') return 'vol-down';
-            if (current === 'next-station') return 'eq-btn';
+            if (current === 'next-station') return 'vol-up';
 
-            if (current === 'mute' || current === 'vol-down' || current === 'vol-up') {
-              return 'check-updates';
+            if (current === 'mute' || current === 'vol-down') {
+              return 'footer-skin';
             }
-            if (current === 'eq-btn') {
+            if (current === 'vol-up' || current === 'eq-btn') {
               return 'check-updates';
             }
 
@@ -260,13 +303,21 @@ export function useTVNavigation({
 
           // UP ARROW NAVIGATION
           if (isUp) {
-            if (current === 'check-updates') {
+            if (current === 'skin-toggle') {
+              return current;
+            }
+
+            if (current === 'check-updates' || current === 'footer-skin') {
               return 'eq-btn';
             }
 
             if (current === 'mute') return 'prev-station';
-            if (current === 'vol-down' || current === 'vol-up') return 'play-pause';
-            if (current === 'eq-btn') return 'next-station';
+            if (current === 'vol-down') return 'play-pause';
+            if (current === 'vol-up' || current === 'eq-btn') return 'next-station';
+
+            if (current === 'prev-station' || current === 'play-pause' || current === 'next-station') {
+              return 'skin-toggle';
+            }
 
             if (isAddBtn && stations.length > 0) {
               return `station-${stations[stations.length - 1].id}`;
@@ -275,10 +326,13 @@ export function useTVNavigation({
             if (isStationItem) {
               const currentId = current.replace('station-', '');
               const currentIndex = stations.findIndex((s) => s.id === currentId);
+              if (currentIndex === 0) {
+                return 'skin-toggle';
+              }
               if (currentIndex > 0) {
                 return `station-${stations[currentIndex - 1].id}`;
               }
-              return 'play-pause';
+              return 'skin-toggle';
             }
 
             return current;
@@ -300,6 +354,7 @@ export function useTVNavigation({
     onVolumeUp,
     onVolumeDown,
     onSelectStation,
+    onToggleSkin,
     stations,
     isTVMode,
     isModalOpen,

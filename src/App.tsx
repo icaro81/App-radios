@@ -718,6 +718,7 @@ export default function App() {
     onOpenAddModal: () => setIsAddModalOpen(true),
     onOpenEqualizer: () => setIsEqOpen(true),
     onCheckUpdate: () => performUpdateCheck(true),
+    onToggleSkin: toggleSkin,
     stations,
     isTVMode: activeMode === 'tv',
     isModalOpen: isEqOpen || isAddModalOpen || isUpdateModalOpen,
@@ -788,6 +789,7 @@ export default function App() {
             }}
             onCheckUpdate={() => performUpdateCheck(true)}
             onOpenEqualizer={() => setIsEqOpen(true)}
+            onToggleSkin={toggleSkin}
             isCheckingUpdate={isCheckingUpdate}
             isLandscape={isLandscape}
             skin={skin}

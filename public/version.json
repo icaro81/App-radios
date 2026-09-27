@@ -1,9 +1,9 @@
 {
-  "versionName": "1.0.24",
-  "versionCode": 24,
-  "releaseDate": "2026-09-26",
-  "title": "Galena Digital v1.0.24",
-  "tagline": "Iconos Sol ☀️ / Luna 🌙, ecualizador nítido en fondo celeste y cuadro de cambios con reseñas dinámicas.",
-  "notes": "• Nuevo control táctil Sol ☀️ / Luna 🌙: Siluetas intuitivas de luna creciente (Negro Cristal) y sol radiante (Celeste Galena) con cápsula cristal e iluminación reactiva.\n• Ecualizador Canvas (VU Meter) perfeccionado en Celeste Galena: Eliminada la sombra negra distorsionada, logrando barras nítidas de cristal obsidiana y brillo especular.\n• Contraste perfecto en ventana de Ecualizador: Frecuencias, faders verticales y etiquetas con máxima legibilidad en ambos temas.\n• Cuadro de cambios y detalles dinámico: Cada actualización incluye su propia reseña destacada e historial navegable de versiones anteriores sin congelarse en la primera entrega.\n• Optimización de fluidez para Android TV y mandos a distancia de TV Box sin retardo en selección.",
+  "versionName": "1.0.40",
+  "versionCode": 40,
+  "releaseDate": "2026-09-27",
+  "title": "Galena Digital v1.0.40",
+  "tagline": "Control remoto optimizado para Android TV: cambio de skin directo (Sol ☀️ / Luna 🌙) y navegación D-Pad inteligente.",
+  "notes": "• Cambio directo de Skin con mando a distancia: Acceso instantáneo en cabecera y pie de página, o pulsando la tecla [0], [*] o teclas de color en el mando.\n• Navegación espacial D-Pad perfeccionada: Salto lateral con flecha izquierda [◄] desde cualquier emisora directamente al panel de reproducción.\n• Acceso rápido al conmutador de tema subiendo desde la primera emisora o los controles principales [▲].\n• Anillos de enfoque con alto contraste y brillo reactivo optimizados para televisores a distancia.\n• Control de tecla Volver/Atrás que regresa el foco a la consola antes de salir de la aplicación.",
   "downloadUrl": ""
 }

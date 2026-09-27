@@ -38,6 +38,7 @@ interface AndroidTVViewProps {
   onVolumeChange?: (volume: number) => void;
   onCheckUpdate?: () => void;
   onOpenEqualizer?: () => void;
+  onToggleSkin?: () => void;
   isCheckingUpdate?: boolean;
   isLandscape?: boolean;
   skin?: 'black' | 'galena';
@@ -63,6 +64,7 @@ export const AndroidTVView = ({
   onVolumeChange,
   onCheckUpdate,
   onOpenEqualizer,
+  onToggleSkin,
   isCheckingUpdate,
   skin = 'black',
 }: AndroidTVViewProps) => {
@@ -114,6 +116,24 @@ export const AndroidTVView = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {onToggleSkin && (
+                    <button
+                      id="tv-header-skin-btn"
+                      onClick={onToggleSkin}
+                      onMouseEnter={() => onSetFocus('skin-toggle')}
+                      className={`flex items-center gap-1.5 text-[10px] font-mono uppercase tracking-wider px-2.5 py-0.5 rounded-full border transition-all cursor-pointer ${
+                        focusedElement === 'skin-toggle'
+                          ? 'border-yellow-300 bg-yellow-400 text-black font-bold scale-110 ring-2 ring-yellow-400 shadow-[0_0_14px_rgba(250,204,21,0.85)]'
+                          : skin === 'black'
+                          ? 'bg-white/10 hover:bg-white/20 border-white/20 text-yellow-300'
+                          : 'bg-black/15 hover:bg-black/25 border-black/30 text-amber-900 font-bold'
+                      }`}
+                      title="Cambiar tema: Luna 🌙 / Sol ☀️ (Tecla 0 o Color en mando)"
+                    >
+                      <span className="text-xs">{skin === 'black' ? '🌙' : '☀️'}</span>
+                      <span>{skin === 'black' ? 'LUNA' : 'SOL'}</span>
+                    </button>
+                  )}
                   {onOpenEqualizer && (
                     <button
                       id="tv-eq-btn"
@@ -447,6 +467,22 @@ export const AndroidTVView = ({
             <div className="mt-3 pt-2.5 border-t border-white/10 flex items-center justify-between px-1 text-[10px] font-mono text-white">
               <span>Galena Digital v{APP_VERSION}</span>
               <div className="flex items-center gap-3">
+                {onToggleSkin && (
+                  <button
+                    id="tv-footer-skin-btn"
+                    onClick={onToggleSkin}
+                    onMouseEnter={() => onSetFocus('footer-skin')}
+                    className={`flex items-center gap-1.5 transition-all duration-75 cursor-pointer px-2.5 py-1 rounded-lg ${
+                      focusedElement === 'footer-skin'
+                        ? 'bg-yellow-400 text-black ring-2 ring-yellow-300 border border-yellow-200 font-bold scale-105 shadow-[0_0_12px_#facc15]'
+                        : 'text-white hover:text-yellow-300 border border-transparent'
+                    }`}
+                    title="Alternar Skin Sol ☀️ / Luna 🌙"
+                  >
+                    <span className="text-xs">{skin === 'black' ? '🌙' : '☀️'}</span>
+                    <span>Tema {skin === 'black' ? 'Luna' : 'Sol'}</span>
+                  </button>
+                )}
                 {onOpenEqualizer && (
                   <button
                     id="tv-footer-eq-btn"
@@ -487,7 +523,7 @@ export const AndroidTVView = ({
 
       {/* Discrete Remote Control Legend */}
       <div className="text-center text-[10px] font-mono text-white/80 mt-2">
-        Mando a distancia: [OK/Centro] Reproducir • [▲ ▼] Emisoras • [◄ ►] Controles • [1-9] Sintonía directa • [+/-] Volumen
+        Mando TV: [OK] Seleccionar • [▲ ▼ ◄ ►] Navegar • [0 / Color] Cambiar Skin (Sol ☀️ / Luna 🌙) • [+/-] Vol • [1-9] Emisoras directas
       </div>
     </div>
   );

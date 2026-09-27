@@ -9,6 +9,20 @@ export interface VersionRelease {
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.0.40',
+    buildCode: 40,
+    date: '27 Sep 2026',
+    tagline: 'Control remoto optimizado para Android TV y TV Box: cambio ágil de Skin (Sol ☀️ / Luna 🌙) y navegación D-Pad inteligente.',
+    changes: [
+      'Cambio directo de Skin con mando a distancia: Acceso instantáneo en cabecera y pie de página, o pulsando la tecla [0], [*] o teclas de color en el mando.',
+      'Navegación espacial D-Pad perfeccionada: Salto lateral con flecha izquierda [◄] desde cualquier emisora directamente al panel de reproducción.',
+      'Acceso rápido al conmutador de tema subiendo desde la primera emisora o los controles principales [▲].',
+      'Anillos de enfoque con alto contraste y brillo reactivo optimizados para televisores a distancia.',
+      'Control de tecla Volver/Atrás que regresa el foco a la consola antes de salir de la aplicación.'
+    ],
+    isLatest: true,
+  },
+  {
     version: '1.0.24',
     buildCode: 24,
     date: '26 Sep 2026',
@@ -20,7 +34,6 @@ export const VERSION_HISTORY: VersionRelease[] = [
       'Cuadro de cambios y detalles dinámico: Cada actualización incluye su propia reseña destacada e historial navegable de versiones anteriores sin congelarse en la primera entrega.',
       'Optimización de fluidez para Android TV y mandos a distancia de TV Box sin retardo en selección.'
     ],
-    isLatest: true,
   },
   {
     version: '1.0.23',
@@ -60,11 +73,9 @@ export const VERSION_HISTORY: VersionRelease[] = [
 ];
 
 export const APP_NAME = 'Galena Digital';
-export const APP_VERSION = '1.0.24';
-export const APP_BUILD_CODE = 24;
+export const APP_VERSION = '1.0.40';
+export const APP_BUILD_CODE = 40;
 export const DEFAULT_REPO = 'icaro81/App-radios';
 
 export const LATEST_RELEASE = VERSION_HISTORY[0];
 export const CURRENT_CHANGELOG = LATEST_RELEASE.changes;
-
-

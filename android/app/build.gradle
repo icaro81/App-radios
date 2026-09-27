@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
-def appVersionCode = System.getenv("GITHUB_RUN_NUMBER") ? Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER")) : 24
-def appVersionName = "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "24")
+def appVersionCode = System.getenv("GITHUB_RUN_NUMBER") ? Integer.parseInt(System.getenv("GITHUB_RUN_NUMBER")) : 40
+def appVersionName = "1.0." + (System.getenv("GITHUB_RUN_NUMBER") ?: "40")
 
 android {
     namespace = "com.radiocristal.app"
